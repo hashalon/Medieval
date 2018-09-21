@@ -18,6 +18,11 @@ var _normal     = Vector3(0, 1, 0) # normal of the ground
 var _push_force = Vector3()        # force to apply to the body
 var _jump_timer = 0                # reaction timer for jumping
 
+# nodes...
+onready var _camera_node = $Camera
+onready var _feet_node   = $Feet
+onready var _model_node  = $Model
+
 # constants
 const REACTION_TIME  = 0.2
 const MAX_SLIDES     = 4
@@ -34,7 +39,7 @@ const RUN_ANGLE_LIMIT = deg2rad(90 - (70/2))
 func _ready():
 	if is_controlled: 
 		capture_mouse()
-		$Model.visible = false
+		_model_node.visible = false
 		
 # manage mouse movements
 func _input(event):
@@ -43,8 +48,11 @@ func _input(event):
 	# handle head movements
 	if event is InputEventMouseMotion and can_move_head:
 		rotation.y -= event.relative.x * sensitivity.x
-		$Camera.rotation.x = clamp($Camera.rotation.x 
+		_camera_node.rotation.x = clamp(_camera_node.rotation.x 
 			- event.relative.y * sensitivity.y, -MAX_ANGLE, MAX_ANGLE)
+	
+	if Input.is_key_pressed(KEY_ESCAPE): 
+		get_tree().quit()
 
 # regular update function
 func _process(delta):
@@ -54,10 +62,11 @@ func _process(delta):
 	if Input.is_key_pressed(KEY_ESCAPE): 
 		release_mouse()
 		is_controlled = false
+		get_tree().quit()
 	
 	# check for ground normal
-	if $Feet.is_colliding():
-		_normal = $Feet.get_collision_normal()
+	if _feet_node.is_colliding():
+		_normal = _feet_node.get_collision_normal()
 	else:
 		_normal = Vector3(0, 1, 0)
 	
@@ -77,7 +86,7 @@ func _process(delta):
 		if dir.length_squared() > 1: dir = dir.normalized()
 		
 		# turn input into movement
-		var move = Quat(transform.basis).xform(Vector3(dir.x, 0, -dir.y))
+		var move = global_transform.basis.xform(Vector3(dir.x, 0, -dir.y))
 		
 		# compute the velocity
 		var vel_y = _velocity.y
@@ -109,7 +118,8 @@ func _process(delta):
 	
 	# apply the velocity
 	move_and_slide(_velocity + _push_force, _normal, current_speed / 2, MAX_SLIDES, STEEP_SLOPE)
-	_push_force *= (1 - AIR_RESISTANCE * delta)
+	#_push_force *= (1 - AIR_RESISTANCE * delta)
+	_push_force = Vector3()
 
 
 # synchronized with physic engine
@@ -118,7 +128,7 @@ func _process(delta):
 
 
 # add a push back force to the character
-func push(force):
+func add_force(force):
 	_push_force += force
 
 # allow to set both head and body control in one call

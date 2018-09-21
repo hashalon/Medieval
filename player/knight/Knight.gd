@@ -16,7 +16,9 @@ export var sword_damage = 50
 var _shield_raised = false
 var _charge_timer  = 0
 
-# store the direction of the charge
+# nodes...
+onready var _sword_zone  = $Camera/Sword
+onready var _charge_ray  = $Charge
 onready var _charge_cast = $Charge.get_cast_to().normalized()
 
 const ALMOST_ONE = 0.99
@@ -42,12 +44,12 @@ func _process(delta):
 		_charge_timer -= delta
 		
 		# correct cast distance
-		$Charge.set_cast_to(_charge_cast * (charge_speed * delta))
+		_charge_ray.set_cast_to(_charge_cast * (charge_speed * delta))
 		
 		# check for collisions forward
-		if $Charge.is_colliding():
+		if _charge_ray.is_colliding():
 			end_charge()
-			var obj = $Charge.get_collider()
+			var obj = _charge_ray.get_collider()
 			# TODO: apply pushback force to object
 		
 		# when the timer end, stop the charge
@@ -63,8 +65,14 @@ func _process(delta):
 
 	# swing the sword
 	elif Input.is_action_pressed('attack'):
-		# TODO: swipe with sword
-		pass
+		# find direction of swipe: either left or right
+		var dir = Vector3(1, 0, 0)
+		
+		# apply damage and push force to all bodies in the zone
+		var bodies = _sword_zone.get_overlapping_bodies()
+		for body in bodies:
+			# TODO: check body type (character or other)
+			pass
 	
 	._process(delta)
 
@@ -73,11 +81,11 @@ func start_charge():
 	# disable controls
 	set_head_body_move(false)
 	# activate charge
-	$Charge.set_enabled(true)
+	_charge_ray.set_enabled(true)
 	_charge_timer = charge_time
 	# manage velocity
 	_push_force   = Vector3()
-	_velocity     = Quat(transform.basis).xform(Vector3(0, 0, -1)).normalized() * charge_speed
+	_velocity     = global_transform.basis.xform(Vector3(0, 0, -1)).normalized() * charge_speed
 	current_speed = charge_speed
 	
 	# if the plane is bend, project the velocity on the plane
@@ -91,7 +99,7 @@ func end_charge():
 	# reactivate controls
 	set_head_body_move(true)
 	# disable charge
-	$Charge.set_enabled(false)
+	_charge_ray.set_enabled(false)
 	_charge_timer = 0
 	# reset velocity
 	_velocity     = Vector3()
@@ -109,7 +117,7 @@ func end_charge():
 #		can_move_body = false
 #
 #		# project the charge motion on the ground
-#		var forward   = Quat(transform.basis).xform(Vector3(0, 0, 1))
+#		var forward   = global_transform.basis.xform(Vector3(0, 0, 1))
 #		var motion    = _normal.cross(_normal.cross(forward))
 #		var collision = move_and_collide(motion * charge_speed * delta)
 #		if collision != null:
@@ -125,7 +133,7 @@ func end_charge():
 #			_is_charging = true
 #			_push_force  = Vector3()
 #			_velocity    = Vector3()
-#			_charge_direction = Quat(transform.basis).xform(Vector3(0, 0, -1))
+#			_charge_direction = global_transform.basis.xform(Vector3(0, 0, -1))
 #
 #	# swing the sword
 #	elif Input.is_action_pressed('attack'):
