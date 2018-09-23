@@ -18,8 +18,8 @@ var _charge_timer  = 0
 
 # nodes...
 onready var _sword_zone  = $Camera/Sword
-onready var _charge_ray  = $Charge
-onready var _charge_cast = $Charge.get_cast_to().normalized()
+#onready var _charge_ray  = $Charge
+#onready var _charge_cast = $Charge.get_cast_to().normalized()
 
 const ALMOST_ONE = 0.99
 
@@ -43,17 +43,11 @@ func _physics_process(delta):
 	if _charge_timer > 0:
 		_charge_timer -= delta
 		
-		# correct cast distance
-		_charge_ray.set_cast_to(_charge_cast * (charge_speed * delta))
-		
-		# check for collisions forward
-		if _charge_ray.is_colliding():
-			end_charge()
-			var obj = _charge_ray.get_collider()
-			# TODO: apply pushback force to object
+		# detect enemies on the path and collide with them
+		_push_enemies()
 		
 		# when the timer end, stop the charge
-		if _charge_timer <= 0: end_charge()
+		if _charge_timer <= 0: _charge_end()
 
 	elif Input.is_action_pressed('secondary'):
 		_shield_raised = true
@@ -61,27 +55,22 @@ func _physics_process(delta):
 
 		# charge with the shield
 		if Input.is_action_just_pressed('attack'):
-			start_charge()
+			_charge_begin()
 
 	# swing the sword
 	elif Input.is_action_pressed('attack'):
 		# find direction of swipe: either left or right
-		var dir = Vector3(1, 0, 0)
+		_swipe_sword(false)
 		
-		# apply damage and push force to all bodies in the zone
-		var bodies = _sword_zone.get_overlapping_bodies()
-		for body in bodies:
-			# TODO: check body type (character or other)
-			pass
 	
 	._physics_process(delta)
 
 # setup the character to start a charge
-func start_charge():
+func _charge_begin():
 	# disable controls
 	set_head_body_move(false)
 	# activate charge
-	_charge_ray.set_enabled(true)
+	#_charge_ray.set_enabled(true)
 	_charge_timer = charge_time
 	# manage velocity
 	_push_force   = Vector3()
@@ -95,17 +84,17 @@ func start_charge():
 
 
 # re-setup the character to move normally again
-func end_charge():
+func _charge_end():
 	# reactivate controls
 	set_head_body_move(true)
 	# disable charge
-	_charge_ray.set_enabled(false)
+	#_charge_ray.set_enabled(false)
 	_charge_timer = 0
 	# reset velocity
 	_velocity     = Vector3()
 	current_speed = move_speed
 
-func push_enemies():
+func _push_enemies():
 	# see each collided object
 	for i in range(get_slide_count()):
 		var collision = get_slide_collision(i)
@@ -116,8 +105,64 @@ func push_enemies():
 			
 			pass
 		
-	pass
+func _swipe_sword(swipe_left):
+	var dir = Vector3(1, 0, 0)
+	if swipe_left: dir = Vector3(-1, 0, 0)
+	
+	# apply damage and push force to all bodies in the zone
+	var bodies = _sword_zone.get_overlapping_bodies()
+	for body in bodies:
+		# TODO: check body type (character or other)
+		pass
 
+
+## OLD
+# regular update function
+#func _physics_process(delta):
+#	if not is_controlled: return
+#
+#	# reset state
+#	_shield_raised = false
+#	current_speed  = move_speed
+#
+#	# if we are charging
+#	if _charge_timer > 0:
+#		_charge_timer -= delta
+#
+#		# correct cast distance
+#		_charge_ray.set_cast_to(_charge_cast * (charge_speed * delta))
+#
+#		# check for collisions forward
+#		if _charge_ray.is_colliding():
+#			end_charge()
+#			var obj = _charge_ray.get_collider()
+#			# TODO: apply pushback force to object
+#
+#		# when the timer end, stop the charge
+#		if _charge_timer <= 0: end_charge()
+#
+#	elif Input.is_action_pressed('secondary'):
+#		_shield_raised = true
+#		current_speed = shield_speed
+#
+#		# charge with the shield
+#		if Input.is_action_just_pressed('attack'):
+#			start_charge()
+#
+#	# swing the sword
+#	elif Input.is_action_pressed('attack'):
+#		# find direction of swipe: either left or right
+#		var dir = Vector3(1, 0, 0)
+#
+#		# apply damage and push force to all bodies in the zone
+#		var bodies = _sword_zone.get_overlapping_bodies()
+#		for body in bodies:
+#			# TODO: check body type (character or other)
+#			pass
+#
+#	._physics_process(delta)
+
+## OLDER
 # regular update function
 #func _process(delta):
 #	._process(delta)

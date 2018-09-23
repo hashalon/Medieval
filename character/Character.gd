@@ -73,54 +73,68 @@ func _physics_process(delta):
 	# cannot control body
 	if can_move_body:
 		
-		# we may want to jump, process jump reaction time
-		if Input.is_action_just_pressed('jump'): _jump_timer = REACTION_TIME
-		if _jump_timer > 0: _jump_timer -= delta
-		
-		# detect user movement
-		var dir = Vector2()
-		if Input.is_action_pressed('left' ): dir.x -= 1
-		if Input.is_action_pressed('right'): dir.x += 1
-		if Input.is_action_pressed('up'   ): dir.y += 1
-		if Input.is_action_pressed('down' ): dir.y -= 1
-		if dir.length_squared() > 1: dir = dir.normalized()
-		
 		# turn input into movement
-		var move = global_transform.basis.xform(Vector3(dir.x, 0, -dir.y))
+		var move = _get_inputs()
 		
-		# compute the velocity
-		var vel_y = _velocity.y
-		var vel   = move * current_speed
-		
-		if is_on_floor():
-			# wanted to jump ? => start jumping
-			if _jump_timer > 0:
-				_jump_timer = 0
-				vel_y = jump_speed
-		else:
-			# when moving in the air, apply a little air resistance
-			var airVel = Vector3(_velocity.x, 0, _velocity.z)
-			vel = airVel * AIR_RESISTANCE + vel * (1 - AIR_RESISTANCE)
-			
-			# compute the gravity to apply based on the situation
-			var grav = gravity * delta
-			if _velocity.y < 0:                   # falling
-				vel_y -= grav * FALL_MULTIPLIER
-			elif Input.is_action_pressed('jump'): # high jump
-				vel_y -= grav
-			else:                                 # low jump
-				vel_y -= grav * JUMP_MULTIPLIER
-		
-		# apply the velocity
-		_velocity = vel
-		if not is_on_floor() or vel_y > 0:
-			_velocity.y += vel_y
+		# process the vertical velocity
+		_process_vertical_velocity()
 	
 	# apply the velocity
 	_velocity += _push_force
 	_push_force = Vector3()
 	move_and_slide(_velocity, _normal, current_speed / 2, MAX_SLIDES, STEEP_SLOPE)
 
+
+# process the inputs to get the direction of movement
+func _get_inputs():
+	# we may want to jump, process jump reaction time
+	if Input.is_action_just_pressed('jump'): _jump_timer = REACTION_TIME
+	if _jump_timer > 0: _jump_timer -= delta
+	
+	# detect user movement
+	var dir = Vector2()
+	if Input.is_action_pressed('left' ): dir.x -= 1
+	if Input.is_action_pressed('right'): dir.x += 1
+	if Input.is_action_pressed('up'   ): dir.y += 1
+	if Input.is_action_pressed('down' ): dir.y -= 1
+	if dir.length_squared() > 1: dir = dir.normalized()
+	
+	# turn input into movement
+	return global_transform.basis.xform(Vector3(dir.x, 0, -dir.y))
+
+
+# manage vertical velocity
+func _process_vertical_velocity():
+	# compute the velocity
+	var vel_y = _velocity.y
+	var vel   = move * current_speed
+		
+	if is_on_floor():
+		# wanted to jump ? => start jumping
+		if _jump_timer > 0:
+			_jump_timer = 0
+			vel_y = jump_speed
+	else:
+		# when moving in the air, apply a little air resistance
+		var airVel = Vector3(_velocity.x, 0, _velocity.z)
+		vel = airVel * AIR_RESISTANCE + vel * (1 - AIR_RESISTANCE)
+			
+		# compute the gravity to apply based on the situation
+		var grav = gravity * delta
+		if _velocity.y < 0:                   # falling
+			vel_y -= grav * FALL_MULTIPLIER
+		elif Input.is_action_pressed('jump'): # high jump
+			vel_y -= grav
+		else:                                 # low jump
+			vel_y -= grav * JUMP_MULTIPLIER
+		
+	# apply the velocity
+	_velocity = vel
+	if not is_on_floor() or vel_y > 0:
+		_velocity.y += vel_y
+
+
+## public methods ##
 
 # add a push back force to the character
 func add_force(force):
@@ -133,6 +147,9 @@ func set_head_body_move(v):
 
 func is_type(type): return type == "Character" or .is_type(type)
 func    get_type(): return "Character"
+
+
+## STATIC FUNCTIONS ##
 
 # capture and release mouse
 static func capture_mouse():

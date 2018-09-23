@@ -36,17 +36,15 @@ func _physics_process(delta):
 		if _target_ray.is_colliding():
 			can_move_body = false
 			_hook_point   = _target_ray.get_collision_point()
-			#_target_ray.set_enabled(false)
 		
 	elif Input.is_action_just_released('secondary'):
 		can_move_body = true
 		_hook_point   = null
-		#_target_ray.set_enabled(true)
 	
 	# if the hook is anchored, move toward it
 	if _hook_point != null:
 		# velocity is proportional to distance from hook point
-		var diff = _hook_point - translation
+		var diff  = _hook_point - translation
 		_velocity = diff * (hook_speed * delta)
 	
 	._physics_process(delta)
