@@ -1,17 +1,13 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://player/knight/Knight.gd" type="Script" id=1]
+[ext_resource path="res://character/Character.gd" type="Script" id=1]
 
-[sub_resource type="SphereShape" id=1]
-
-radius = 0.6
-
-[sub_resource type="CapsuleShape" id=2]
+[sub_resource type="CapsuleShape" id=1]
 
 radius = 0.4
 height = 1.0
 
-[sub_resource type="CylinderMesh" id=3]
+[sub_resource type="CylinderMesh" id=2]
 
 custom_aabb = AABB( 0, 0, 0, 0, 0, 0 )
 top_radius = 1.0
@@ -20,7 +16,7 @@ height = 2.0
 radial_segments = 64
 rings = 4
 
-[sub_resource type="SpatialMaterial" id=4]
+[sub_resource type="SpatialMaterial" id=3]
 
 render_priority = 0
 flags_transparent = false
@@ -72,7 +68,7 @@ proximity_fade_enable = false
 distance_fade_enable = false
 _sections_unfolded = [ "Albedo", "Flags", "Metallic" ]
 
-[node name="Knight" type="KinematicBody"]
+[node name="Character" type="KinematicBody"]
 
 input_ray_pickable = true
 input_capture_on_drag = false
@@ -86,17 +82,11 @@ axis_lock_angular_y = false
 axis_lock_angular_z = true
 collision/safe_margin = 0.001
 script = ExtResource( 1 )
-_sections_unfolded = [ "collision" ]
 is_controlled = true
 sensitivity = Vector2( 0.003, 0.0025 )
-move_speed = 7.5
+move_speed = 10.0
 jump_speed = 7.5
 gravity = 10.0
-shield_speed = 3.0
-charge_speed = 50.0
-charge_time = 0.1
-charge_damage = 30
-sword_damage = 50
 
 [node name="Camera" type="Camera" parent="." index="0"]
 
@@ -115,37 +105,6 @@ near = 0.05
 far = 100.0
 _sections_unfolded = [ "Transform" ]
 
-[node name="Sword" type="Area" parent="Camera" index="0"]
-
-input_ray_pickable = false
-input_capture_on_drag = false
-space_override = 0
-gravity_point = false
-gravity_distance_scale = 0.0
-gravity_vec = Vector3( 0, -1, 0 )
-gravity = 9.8
-linear_damp = 0.1
-angular_damp = 1.0
-priority = 0.0
-monitoring = true
-monitorable = true
-collision_layer = 1
-collision_mask = 1
-audio_bus_override = false
-audio_bus_name = "Master"
-reverb_bus_enable = false
-reverb_bus_name = "Master"
-reverb_bus_amount = 0.0
-reverb_bus_uniformity = 0.0
-_sections_unfolded = [ "Collision" ]
-
-[node name="Zone" type="CollisionShape" parent="Camera/Sword" index="0"]
-
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1 )
-shape = SubResource( 1 )
-disabled = false
-_sections_unfolded = [ "Transform" ]
-
 [node name="Feet" type="RayCast" parent="." index="1"]
 
 enabled = true
@@ -157,7 +116,7 @@ _sections_unfolded = [ "Transform" ]
 [node name="Shape" type="CollisionShape" parent="." index="2"]
 
 transform = Transform( 1, 0, 5.30863e-14, 5.30863e-14, 1.62921e-07, -1, 0, 1, 1.62921e-07, 0, 0, 0 )
-shape = SubResource( 2 )
+shape = SubResource( 1 )
 disabled = false
 _sections_unfolded = [ "Transform" ]
 
@@ -174,17 +133,9 @@ lod_min_distance = 0.0
 lod_min_hysteresis = 0.0
 lod_max_distance = 0.0
 lod_max_hysteresis = 0.0
-mesh = SubResource( 3 )
+mesh = SubResource( 2 )
 skeleton = NodePath("..")
-material/0 = SubResource( 4 )
+material/0 = SubResource( 3 )
 _sections_unfolded = [ "Transform", "material" ]
-
-[node name="Charge" type="RayCast" parent="." index="4"]
-
-enabled = false
-exclude_parent = true
-cast_to = Vector3( 0, 0, -1 )
-collision_mask = 1
-_sections_unfolded = [ "Transform" ]
 
 

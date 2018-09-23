@@ -1,4 +1,4 @@
-extends "res://player/Player.gd"
+extends "res://character/Character.gd"
 
 # attributes
 export var hook_speed = 200.0
@@ -17,7 +17,7 @@ onready var _target_ray = $Camera/Target
 #	._input(event)
 
 # regular update function
-func _process(delta):
+func _physics_process(delta):
 	if not is_controlled: return
 	
 	# tells the user if he can fire the grappling-hook
@@ -49,4 +49,4 @@ func _process(delta):
 		var diff = _hook_point - translation
 		_velocity = diff * (hook_speed * delta)
 	
-	._process(delta)
+	._physics_process(delta)

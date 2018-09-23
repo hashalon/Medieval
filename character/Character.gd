@@ -55,7 +55,7 @@ func _input(event):
 		get_tree().quit()
 
 # regular update function
-func _process(delta):
+func _physics_process(delta):
 	if not is_controlled: return
 	
 	# TODO:... when we press the escape key, release the mouse
@@ -117,14 +117,9 @@ func _process(delta):
 			_velocity.y += vel_y
 	
 	# apply the velocity
-	move_and_slide(_velocity + _push_force, _normal, current_speed / 2, MAX_SLIDES, STEEP_SLOPE)
-	#_push_force *= (1 - AIR_RESISTANCE * delta)
+	_velocity += _push_force
 	_push_force = Vector3()
-
-
-# synchronized with physic engine
-#func _physics_process(delta):
-#	if not is_controlled: return
+	move_and_slide(_velocity, _normal, current_speed / 2, MAX_SLIDES, STEEP_SLOPE)
 
 
 # add a push back force to the character
@@ -135,6 +130,9 @@ func add_force(force):
 func set_head_body_move(v):
 	can_move_head = v
 	can_move_body = v
+
+func is_type(type): return type == "Character" or .is_type(type)
+func    get_type(): return "Character"
 
 # capture and release mouse
 static func capture_mouse():

@@ -1,4 +1,4 @@
-extends "res://player/Player.gd"
+extends "res://character/Character.gd"
 
 # attributes
 export var bolt_damage   = 8
@@ -14,8 +14,8 @@ onready var _bolt_zone = $Camera/Bolt
 #	._input(event)
 
 # regular update function
-func _process(delta):
-	._process(delta)
+func _physics_process(delta):
+	._physics_process(delta)
 	
 	# fire a lightning bolt (shotgun like)
 	# apply push back force to self

@@ -1,4 +1,4 @@
-extends "res://player/Player.gd"
+extends "res://character/Character.gd"
 
 # shield attributes
 export var shield_speed = 3.0
@@ -32,7 +32,7 @@ func _ready():
 
 
 # regular update function
-func _process(delta):
+func _physics_process(delta):
 	if not is_controlled: return
 
 	# reset state
@@ -74,7 +74,7 @@ func _process(delta):
 			# TODO: check body type (character or other)
 			pass
 	
-	._process(delta)
+	._physics_process(delta)
 
 # setup the character to start a charge
 func start_charge():
@@ -105,6 +105,18 @@ func end_charge():
 	_velocity     = Vector3()
 	current_speed = move_speed
 
+func push_enemies():
+	# see each collided object
+	for i in range(get_slide_count()):
+		var collision = get_slide_collision(i)
+		var obj = collision.collider
+		
+		# if the object is a character -> impact him
+		if obj.is_type("Player"): # no cast in godot
+			
+			pass
+		
+	pass
 
 # regular update function
 #func _process(delta):
