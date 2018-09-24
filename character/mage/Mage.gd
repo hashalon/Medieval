@@ -7,11 +7,10 @@ export var bolt_pushback = 14.0
 # nodes...
 onready var _bolt_zone = $Camera/Bolt
 
-#func _ready():
-#	._ready()
 
-#func _input(event):
-#	._input(event)
+func _ready():
+	._ready()
+
 
 # regular update function
 func _physics_process(delta):
@@ -44,4 +43,4 @@ func _lightning_bolt():
 		
 	# puch the character backward
 	var force = _camera_node.global_transform.basis.xform(Vector3(0, 0, bolt_pushback))
-	_velocity = force
+	add_force(force)

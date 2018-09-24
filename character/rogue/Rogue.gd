@@ -10,11 +10,10 @@ var _hook_point = null # Vector3
 # nodes...
 onready var _target_ray = $Camera/Target
 
-#func _ready():
-#	._ready()
 
-#func _input(event):
-#	._input(event)
+func _ready():
+	._ready()
+
 
 # regular update function
 func _physics_process(delta):

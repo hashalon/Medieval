@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://character/knight/Knight.gd" type="Script" id=1]
 
@@ -72,6 +72,14 @@ proximity_fade_enable = false
 distance_fade_enable = false
 _sections_unfolded = [ "Albedo", "Flags", "Metallic" ]
 
+[sub_resource type="CubeMesh" id=5]
+
+custom_aabb = AABB( 0, 0, 0, 0, 0, 0 )
+size = Vector3( 2, 2, 2 )
+subdivide_width = 0
+subdivide_height = 0
+subdivide_depth = 0
+
 [node name="Knight" type="KinematicBody"]
 
 input_ray_pickable = true
@@ -94,8 +102,9 @@ jump_speed = 7.5
 gravity = 10.0
 shield_speed = 3.0
 charge_speed = 50.0
-charge_time = 0.1
+charge_time = 0.05
 charge_damage = 30
+charge_force = 10.0
 sword_damage = 50
 
 [node name="Camera" type="Camera" parent="." index="0"]
@@ -108,7 +117,7 @@ h_offset = 0.0
 v_offset = 0.0
 doppler_tracking = 0
 projection = 0
-current = true
+current = false
 fov = 70.0
 size = 1.0
 near = 0.05
@@ -178,12 +187,22 @@ skeleton = NodePath("..")
 material/0 = SubResource( 4 )
 _sections_unfolded = [ "Transform", "material" ]
 
-[node name="Charge" type="RayCast" parent="." index="4"]
+[node name="Model2" type="MeshInstance" parent="." index="4"]
 
-enabled = false
-exclude_parent = true
-cast_to = Vector3( 0, 0, -1 )
-collision_mask = 1
-_sections_unfolded = [ "Transform" ]
+transform = Transform( 0.217942, 0, 0, 0, 0.196844, 0, 0, 0, 0.5, 0, 0.491017, -0.833679 )
+visible = false
+layers = 1
+material_override = null
+cast_shadow = 1
+extra_cull_margin = 0.0
+use_in_baked_light = false
+lod_min_distance = 0.0
+lod_min_hysteresis = 0.0
+lod_max_distance = 0.0
+lod_max_hysteresis = 0.0
+mesh = SubResource( 5 )
+skeleton = NodePath("..")
+material/0 = null
+_sections_unfolded = [ "Transform", "material" ]
 
 

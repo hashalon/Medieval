@@ -1,6 +1,7 @@
 extends Node
 
 func _ready():
+	#$Camera.make_current()
 	pass
 #	var new_player = preload('res://player/Player.tscn').instance()
 #	var id = get_tree().get_network_unique_id()
@@ -9,3 +10,8 @@ func _ready():
 #	get_tree().get_root().add_child(new_player)
 #	var info = Network.self_data
 #	new_player.init(info.name, info.position, false)
+
+
+func _process(delta):
+	#$Camera.make_current()
+	pass

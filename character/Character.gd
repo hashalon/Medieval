@@ -28,7 +28,8 @@ const REACTION_TIME  = 0.2
 const MAX_SLIDES     = 4
 const STEEP_SLOPE    = deg2rad(45)
 const MAX_ANGLE      = deg2rad(90)
-const AIR_RESISTANCE = 0.1
+const INERTIA_GROUND = 0.9
+const INERTIA_AIR    = 0.99
 # used to alter the gravity applied when doing a high jump or low jump
 const FALL_MULTIPLIER = 3
 const JUMP_MULTIPLIER = 2
@@ -40,6 +41,7 @@ func _ready():
 	if is_controlled: 
 		capture_mouse()
 		_model_node.visible = false
+		_camera_node.make_current()
 		
 # manage mouse movements
 func _input(event):
@@ -54,10 +56,10 @@ func _input(event):
 	if Input.is_key_pressed(KEY_ESCAPE): 
 		get_tree().quit()
 
-# regular update function
+
+
+# physic synchronized update function
 func _physics_process(delta):
-	if not is_controlled: return
-	
 	# TODO:... when we press the escape key, release the mouse
 	if Input.is_key_pressed(KEY_ESCAPE): 
 		release_mouse()
@@ -69,15 +71,11 @@ func _physics_process(delta):
 		_normal = _feet_node.get_collision_normal()
 	else:
 		_normal = Vector3(0, 1, 0)
-	
-	# cannot control body
+		
+	# handle movement of the body based on inputs
 	if can_move_body:
-		
-		# turn input into movement
-		var move = _get_inputs()
-		
-		# process the vertical velocity
-		_process_vertical_velocity()
+		var move = _get_inputs(delta)
+		_process_vertical_velocity(move, delta)
 	
 	# apply the velocity
 	_velocity += _push_force
@@ -86,7 +84,9 @@ func _physics_process(delta):
 
 
 # process the inputs to get the direction of movement
-func _get_inputs():
+func _get_inputs(delta):
+	if not is_controlled: return Vector3()
+	
 	# we may want to jump, process jump reaction time
 	if Input.is_action_just_pressed('jump'): _jump_timer = REACTION_TIME
 	if _jump_timer > 0: _jump_timer -= delta
@@ -104,30 +104,35 @@ func _get_inputs():
 
 
 # manage vertical velocity
-func _process_vertical_velocity():
+func _process_vertical_velocity(movement, delta):
 	# compute the velocity
 	var vel_y = _velocity.y
-	var vel   = move * current_speed
-		
+	var vel   = movement * current_speed
+	
+	# we need inertia to handle push back forces
+	var inertia = INERTIA_GROUND
+	
 	if is_on_floor():
 		# wanted to jump ? => start jumping
 		if _jump_timer > 0:
 			_jump_timer = 0
 			vel_y = jump_speed
 	else:
-		# when moving in the air, apply a little air resistance
-		var airVel = Vector3(_velocity.x, 0, _velocity.z)
-		vel = airVel * AIR_RESISTANCE + vel * (1 - AIR_RESISTANCE)
-			
+		# when in the air, the inertia is even greater
+		inertia = INERTIA_AIR
+		
 		# compute the gravity to apply based on the situation
 		var grav = gravity * delta
-		if _velocity.y < 0:                   # falling
-			vel_y -= grav * FALL_MULTIPLIER
-		elif Input.is_action_pressed('jump'): # high jump
-			vel_y -= grav
-		else:                                 # low jump
-			vel_y -= grav * JUMP_MULTIPLIER
+		var high = is_controlled and Input.is_action_pressed('jump')
 		
+		if _velocity.y < 0: vel_y -= grav * FALL_MULTIPLIER # falling
+		elif high:          vel_y -= grav                   # high jump
+		else:               vel_y -= grav * JUMP_MULTIPLIER # low jump
+	
+	# motion is subject to inertia
+	var airVel = Vector3(_velocity.x, 0, _velocity.z)
+	vel = airVel * inertia + vel * (1 - inertia)
+	
 	# apply the velocity
 	_velocity = vel
 	if not is_on_floor() or vel_y > 0:
@@ -145,8 +150,9 @@ func set_head_body_move(v):
 	can_move_head = v
 	can_move_body = v
 
-func is_type(type): return type == "Character" or .is_type(type)
-func    get_type(): return "Character"
+# override class check to allow attacks
+func is_class(type): return type == "Character" or .is_type(type)
+func    get_class(): return "Character"
 
 
 ## STATIC FUNCTIONS ##
