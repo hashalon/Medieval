@@ -154,6 +154,8 @@ func set_head_body_move(v):
 func is_class(type): return type == "Character" or .is_type(type)
 func    get_class(): return "Character"
 
+# return true if the character is really grounded
+func is_grounded(): is_on_floor() or _feet_node.is_colliding()
 
 ## STATIC FUNCTIONS ##
 

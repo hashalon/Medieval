@@ -11,11 +11,14 @@ export var charge_force  = 10.0
 
 # sword attributes
 export var sword_damage = 50
+export var sword_force  = 5.0
 
+export var downthrust_speed = 10
 
 # private members
 var _shield_raised = false
 var _charge_timer  = 0
+var _is_downthrusting = false
 
 # nodes...
 onready var _sword_zone  = $Camera/Sword
@@ -45,7 +48,16 @@ func _physics_process(delta):
 		
 		# when the timer end, stop the charge
 		if _charge_timer <= 0: _charge_end()
-
+	
+	# if we are downthrusting
+	elif _is_downthrusting:
+		_velocity.y = -downthrust_speed
+		if is_grounded():
+			_downthrust_end()
+	
+	elif Input.is_action_just_pressed('ternary') and not is_grounded():
+		_downthrust_begin()
+	
 	elif Input.is_action_pressed('secondary'):
 		_shield_raised = true
 		current_speed = shield_speed
@@ -110,13 +122,30 @@ func _push_enemies():
 func _swipe_sword(swipe_left):
 	var dir = Vector3(1, 0, 0)
 	if swipe_left: dir = Vector3(-1, 0, 0)
+	var force = _camera_node.global_transform.basis.xform(dir) * sword_force
 	
 	# apply damage and push force to all bodies in the zone
 	var bodies = _sword_zone.get_overlapping_bodies()
 	for body in bodies:
-		# TODO: check body type (character or other)
-		pass
-		
+		if body.is_class("Character") and body != self:
+			body.add_force(force)
+			# damage the character
+
+# downthrust to impact enemies
+func _downthrust_begin():
+	# impact the ground with the sword !
+	_velocity = Vector3(0, -downthrust_speed, 0)
+	_is_downthrusting = true
+	# look downward
+	can_move_head = false
+	_camera_node.rotation.x = -MAX_ANGLE
+
+func _downthrust_end():
+	_is_downthrusting = false
+	can_move_head     = true
+	# impact enemies !
+
+
 ## public methods ##
 func add_force(force):
 	# TODO: check direction of force when shield is raised

@@ -71,7 +71,7 @@ subdivide_width = 0
 subdivide_height = 0
 subdivide_depth = 0
 
-[node name="Node" type="Node"]
+[node name="Node" type="Node" index="0"]
 
 script = ExtResource( 1 )
 
@@ -245,13 +245,7 @@ directional_shadow_max_distance = 200.0
 transform = Transform( 0.368804, 0, 0.929507, 0, 1, 0, -0.929507, 0, 0.368804, 4.10026, 1.64872, 0 )
 is_controlled = false
 
-[node name="Knight" parent="." index="6" instance=ExtResource( 4 )]
-
-transform = Transform( 0.998407, 0, 0.0564237, 0, 1, 0, -0.0564237, 0, 0.998407, 4.04679, 2.13844, 3.86984 )
-charge_time = 0.05
-charge_force = 10.0
-
-[node name="Camera" type="Camera" parent="." index="7"]
+[node name="Camera" type="Camera" parent="." index="6"]
 
 transform = Transform( 0.991415, -0.0263451, 0.128074, 0, 0.979492, 0.201484, -0.130755, -0.199754, 0.971083, 0, 5.88589, 12.4318 )
 keep_aspect = 1
@@ -266,5 +260,9 @@ fov = 70.0
 size = 1.0
 near = 0.05
 far = 100.0
+
+[node name="Knight" parent="." index="7" instance=ExtResource( 4 )]
+
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.12896, 0 )
 
 

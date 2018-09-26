@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://character/mage/Mage.gd" type="Script" id=1]
+[ext_resource path="res://character/wizard/Wizard.gd" type="Script" id=1]
 
 [sub_resource type="CapsuleShape" id=1]
 
@@ -73,7 +73,7 @@ proximity_fade_enable = false
 distance_fade_enable = false
 _sections_unfolded = [ "Albedo", "Flags", "Metallic" ]
 
-[node name="Mage" type="KinematicBody"]
+[node name="Wizard" type="KinematicBody"]
 
 input_ray_pickable = true
 input_capture_on_drag = false
@@ -92,8 +92,9 @@ sensitivity = Vector2( 0.003, 0.0025 )
 move_speed = 7.5
 jump_speed = 7.5
 gravity = 10.0
+hover_fall = 0.1
 bolt_damage = 8
-bolt_pushback = 14.0
+bolt_pushback = 10.0
 
 [node name="Camera" type="Camera" parent="." index="0"]
 
@@ -112,7 +113,7 @@ near = 0.05
 far = 100.0
 _sections_unfolded = [ "Transform" ]
 
-[node name="Area" type="Area" parent="Camera" index="0"]
+[node name="Bolt" type="Area" parent="Camera" index="0"]
 
 input_ray_pickable = false
 input_capture_on_drag = false
@@ -135,11 +136,19 @@ reverb_bus_name = "Master"
 reverb_bus_amount = 0.0
 reverb_bus_uniformity = 0.0
 
-[node name="CollisionShape" type="CollisionShape" parent="Camera/Area" index="0"]
+[node name="Shape" type="CollisionShape" parent="Camera/Bolt" index="0"]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2 )
 shape = SubResource( 1 )
 disabled = false
+_sections_unfolded = [ "Transform" ]
+
+[node name="Target" type="RayCast" parent="Camera" index="1"]
+
+enabled = true
+exclude_parent = true
+cast_to = Vector3( 0, 0, -5 )
+collision_mask = 1
 _sections_unfolded = [ "Transform" ]
 
 [node name="Feet" type="RayCast" parent="." index="1"]
