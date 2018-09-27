@@ -1,11 +1,20 @@
 extends KinematicBody
 
+enum TEAM{
+	neutral,
+	alpha,
+	beta
+}
+
 # attributes
 export var is_controlled = true
 export var sensitivity = Vector2(0.003, 0.0025)
 export var move_speed  = 7.5
 export var jump_speed  = 7.5
 export var gravity     = 10.0
+
+export var team   = TEAM.neutral
+export var health = 100
 
 # modifiers
 onready var current_speed = move_speed
@@ -156,6 +165,12 @@ func    get_class(): return "Character"
 
 # return true if the character is really grounded
 func is_grounded(): is_on_floor() or _feet_node.is_colliding()
+
+# two characters are enemies if one is neutral or their teams are different
+func is_enemy(other):
+	# no cast in godot
+	if not other.is_class('Character') or other == self: return false
+	return team == TEAM.neutral or other.team == TEAM.neutral or team != other.team
 
 ## STATIC FUNCTIONS ##
 

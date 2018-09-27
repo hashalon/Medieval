@@ -5,7 +5,7 @@
 [sub_resource type="CapsuleShape" id=1]
 
 radius = 1.0
-height = 1.0
+height = 4.0
 
 [sub_resource type="CapsuleShape" id=2]
 
@@ -92,7 +92,8 @@ sensitivity = Vector2( 0.003, 0.0025 )
 move_speed = 7.5
 jump_speed = 7.5
 gravity = 10.0
-hover_fall = 0.1
+team = 0
+health = 100
 bolt_damage = 8
 bolt_pushback = 10.0
 
@@ -115,7 +116,7 @@ _sections_unfolded = [ "Transform" ]
 
 [node name="Bolt" type="Area" parent="Camera" index="0"]
 
-input_ray_pickable = false
+input_ray_pickable = true
 input_capture_on_drag = false
 space_override = 0
 gravity_point = false
@@ -138,17 +139,9 @@ reverb_bus_uniformity = 0.0
 
 [node name="Shape" type="CollisionShape" parent="Camera/Bolt" index="0"]
 
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3 )
 shape = SubResource( 1 )
 disabled = false
-_sections_unfolded = [ "Transform" ]
-
-[node name="Target" type="RayCast" parent="Camera" index="1"]
-
-enabled = true
-exclude_parent = true
-cast_to = Vector3( 0, 0, -5 )
-collision_mask = 1
 _sections_unfolded = [ "Transform" ]
 
 [node name="Feet" type="RayCast" parent="." index="1"]

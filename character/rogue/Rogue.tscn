@@ -87,7 +87,10 @@ sensitivity = Vector2( 0.003, 0.0025 )
 move_speed = 7.5
 jump_speed = 7.5
 gravity = 10.0
+team = 0
+health = 100
 hook_speed = 200.0
+double_jump = 5.0
 
 [node name="Camera" type="Camera" parent="." index="0"]
 
@@ -106,7 +109,7 @@ near = 0.05
 far = 100.0
 _sections_unfolded = [ "Transform" ]
 
-[node name="Target" type="RayCast" parent="Camera" index="0"]
+[node name="Hook" type="RayCast" parent="Camera" index="0"]
 
 enabled = true
 exclude_parent = true

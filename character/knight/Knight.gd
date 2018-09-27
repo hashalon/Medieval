@@ -49,15 +49,6 @@ func _physics_process(delta):
 		# when the timer end, stop the charge
 		if _charge_timer <= 0: _charge_end()
 	
-	# if we are downthrusting
-	elif _is_downthrusting:
-		_velocity.y = -downthrust_speed
-		if is_grounded():
-			_downthrust_end()
-	
-	elif Input.is_action_just_pressed('ternary') and not is_grounded():
-		_downthrust_begin()
-	
 	elif Input.is_action_pressed('secondary'):
 		_shield_raised = true
 		current_speed = shield_speed
@@ -72,6 +63,7 @@ func _physics_process(delta):
 		_swipe_sword(false)
 		
 	._physics_process(delta)
+
 
 # setup the character to start a charge
 func _charge_begin():
@@ -111,7 +103,7 @@ func _push_enemies():
 		var obj = collision.collider
 		
 		# if the object is a character -> impact him
-		if obj.is_class("Character"): # no cast in godot
+		if is_enemy(obj): 
 			var dir = _velocity.normalized()
 			if dir.y < 0: dir.y = 0
 			obj.add_force(dir * charge_force)
@@ -127,23 +119,10 @@ func _swipe_sword(swipe_left):
 	# apply damage and push force to all bodies in the zone
 	var bodies = _sword_zone.get_overlapping_bodies()
 	for body in bodies:
-		if body.is_class("Character") and body != self:
+		if is_enemy(body):
 			body.add_force(force)
 			# damage the character
 
-# downthrust to impact enemies
-func _downthrust_begin():
-	# impact the ground with the sword !
-	_velocity = Vector3(0, -downthrust_speed, 0)
-	_is_downthrusting = true
-	# look downward
-	can_move_head = false
-	_camera_node.rotation.x = -MAX_ANGLE
-
-func _downthrust_end():
-	_is_downthrusting = false
-	can_move_head     = true
-	# impact enemies !
 
 
 ## public methods ##

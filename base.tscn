@@ -71,7 +71,7 @@ subdivide_width = 0
 subdivide_height = 0
 subdivide_depth = 0
 
-[node name="Node" type="Node" index="0"]
+[node name="Node" type="Node"]
 
 script = ExtResource( 1 )
 
@@ -244,6 +244,8 @@ directional_shadow_max_distance = 200.0
 
 transform = Transform( 0.368804, 0, 0.929507, 0, 1, 0, -0.929507, 0, 0.368804, 4.10026, 1.64872, 0 )
 is_controlled = false
+team = 0
+health = 100
 
 [node name="Camera" type="Camera" parent="." index="6"]
 
@@ -264,5 +266,7 @@ far = 100.0
 [node name="Knight" parent="." index="7" instance=ExtResource( 4 )]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.12896, 0 )
+team = 0
+health = 100
 
 
