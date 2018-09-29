@@ -2,16 +2,17 @@ extends "res://character/Character.gd"
 
 # attributes
 export var hook_speed  = 200.0
-export var double_jump = 5.0
 # use the ray itself to define the maximum distance
 
 # private members
 var _hook_point = null # Vector3
-var _has_jumped = false
+var _jump_count = 0
 
 # nodes...
 onready var _hook_ray = $Camera/Hook
 
+# projectile
+onready var _arrow_scene = load("res://character/rogue/Arrow.tscn")
 
 func _ready():
 	._ready()
@@ -29,6 +30,9 @@ func _physics_process(delta):
 	
 	# fire an arrow
 	if Input.is_action_just_pressed('attack'):
+		var arrow = _arrow_scene.instance()
+		arrow.prepare(self)
+		_root_node.add_child(arrow)
 		pass
 	
 	# use grappling hook
@@ -49,11 +53,10 @@ func _physics_process(delta):
 	
 	# allow multiple jumps
 	if is_grounded():
-		_has_jumped = false
-	else:
-		if Input.is_action_just_pressed('jump') and not _has_jumped:
-			_velocity.y = double_jump
-			_has_jumped = true
+		_jump_count = 0
+	elif Input.is_action_just_pressed('jump'):
+		_jump_count += 1
+		if _jump_count < 2: _velocity.y = jump_speed
 	
 	._physics_process(delta)
 
@@ -64,9 +67,9 @@ func _hook_begin():
 
 func _hook_end():
 	if _hook_point != null:
-		_velocity = Vector3(0, double_jump, 0)
+		_velocity = Vector3(0, jump_speed, 0)
 	can_move_body = true
 	_hook_point   = null
-	_has_jumped   = false
+	_jump_count   = 0
 	
 

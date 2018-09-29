@@ -28,15 +28,18 @@ var _push_force = Vector3()        # force to apply to the body
 var _jump_timer = 0                # reaction timer for jumping
 
 # nodes...
+onready var _root_node   = get_tree().get_root()
 onready var _camera_node = $Camera
 onready var _feet_node   = $Feet
 onready var _model_node  = $Model
 
 # constants
-const REACTION_TIME  = 0.2
-const MAX_SLIDES     = 4
-const STEEP_SLOPE    = deg2rad(45)
-const MAX_ANGLE      = deg2rad(90)
+const REACTION_TIME   = 0.2
+const MAX_SLIDES      = 4
+const STEEP_SLOPE     = deg2rad(45)
+const MAX_ANGLE       = deg2rad(90)
+const EPSILON_IMPULSE = 0.1
+# inertia of objects on the ground and in the air
 const INERTIA_GROUND = 0.9
 const INERTIA_AIR    = 0.99
 # used to alter the gravity applied when doing a high jump or low jump
@@ -164,13 +167,25 @@ func is_class(type): return type == "Character" or .is_type(type)
 func    get_class(): return "Character"
 
 # return true if the character is really grounded
-func is_grounded(): is_on_floor() or _feet_node.is_colliding()
+func is_grounded(): return is_on_floor() or _feet_node.is_colliding()
 
 # two characters are enemies if one is neutral or their teams are different
 func is_enemy(other):
 	# no cast in godot
 	if not other.is_class('Character') or other == self: return false
 	return team == TEAM.neutral or other.team == TEAM.neutral or team != other.team
+
+# return the direction the head is looking at
+func get_forward_look():
+	return _camera_node.global_transform.basis.xform(Vector3(0, 0, -1)).normalized()
+
+# return the position of the head in global space
+func get_head_position():
+	return _camera_node.global_transform.origin
+
+# return the basis of the head
+func get_head_basis():
+	return _camera_node.global_transform.basis
 
 ## STATIC FUNCTIONS ##
 

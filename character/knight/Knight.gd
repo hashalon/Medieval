@@ -74,7 +74,7 @@ func _charge_begin():
 	_charge_timer = charge_time
 	# manage velocity
 	_push_force   = Vector3()
-	_velocity     = global_transform.basis.xform(Vector3(0, 0, -1)).normalized() * charge_speed
+	_velocity     = get_forward_look() * charge_speed
 	current_speed = charge_speed
 	
 	# if the plane is bend, project the velocity on the plane
@@ -105,7 +105,7 @@ func _push_enemies():
 		# if the object is a character -> impact him
 		if is_enemy(obj): 
 			var dir = _velocity.normalized()
-			if dir.y < 0: dir.y = 0
+			if dir.y < EPSILON_IMPULSE: dir.y = EPSILON_IMPULSE
 			obj.add_force(dir * charge_force)
 			# TODO: damages
 

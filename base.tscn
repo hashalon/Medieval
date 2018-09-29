@@ -3,7 +3,7 @@
 [ext_resource path="res://base.gd" type="Script" id=1]
 [ext_resource path="res://jupiter.png" type="Texture" id=2]
 [ext_resource path="res://character/Character.tscn" type="PackedScene" id=3]
-[ext_resource path="res://character/knight/Knight.tscn" type="PackedScene" id=4]
+[ext_resource path="res://character/wizard/Wizard.tscn" type="PackedScene" id=4]
 
 [sub_resource type="BoxShape" id=1]
 
@@ -244,8 +244,6 @@ directional_shadow_max_distance = 200.0
 
 transform = Transform( 0.368804, 0, 0.929507, 0, 1, 0, -0.929507, 0, 0.368804, 4.10026, 1.64872, 0 )
 is_controlled = false
-team = 0
-health = 100
 
 [node name="Camera" type="Camera" parent="." index="6"]
 
@@ -263,10 +261,8 @@ size = 1.0
 near = 0.05
 far = 100.0
 
-[node name="Knight" parent="." index="7" instance=ExtResource( 4 )]
+[node name="Wizard" parent="." index="7" instance=ExtResource( 4 )]
 
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.12896, 0 )
-team = 0
-health = 100
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.36938, 0 )
 
 

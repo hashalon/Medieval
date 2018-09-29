@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://character/wizard/Wizard.gd" type="Script" id=1]
 
@@ -73,6 +73,10 @@ proximity_fade_enable = false
 distance_fade_enable = false
 _sections_unfolded = [ "Albedo", "Flags", "Metallic" ]
 
+[sub_resource type="SphereShape" id=5]
+
+radius = 1.5
+
 [node name="Wizard" type="KinematicBody"]
 
 input_ray_pickable = true
@@ -95,7 +99,8 @@ gravity = 10.0
 team = 0
 health = 100
 bolt_damage = 8
-bolt_pushback = 10.0
+downthrust_speed = 2.0
+impact_force = 15.0
 
 [node name="Camera" type="Camera" parent="." index="0"]
 
@@ -137,7 +142,7 @@ reverb_bus_name = "Master"
 reverb_bus_amount = 0.0
 reverb_bus_uniformity = 0.0
 
-[node name="Shape" type="CollisionShape" parent="Camera/Bolt" index="0"]
+[node name="range" type="CollisionShape" parent="Camera/Bolt" index="0"]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3 )
 shape = SubResource( 1 )
@@ -152,7 +157,7 @@ cast_to = Vector3( 0, -1, 0 )
 collision_mask = 1
 _sections_unfolded = [ "Transform" ]
 
-[node name="Shape" type="CollisionShape" parent="." index="2"]
+[node name="body" type="CollisionShape" parent="." index="2"]
 
 transform = Transform( 1, 0, 5.30863e-14, 5.30863e-14, 1.62921e-07, -1, 0, 1, 1.62921e-07, 0, 0, 0 )
 shape = SubResource( 2 )
@@ -175,5 +180,36 @@ mesh = SubResource( 3 )
 skeleton = NodePath("..")
 material/0 = SubResource( 4 )
 _sections_unfolded = [ "Transform", "material" ]
+
+[node name="Impact" type="Area" parent="." index="4"]
+
+input_ray_pickable = false
+input_capture_on_drag = false
+space_override = 0
+gravity_point = false
+gravity_distance_scale = 0.0
+gravity_vec = Vector3( 0, -1, 0 )
+gravity = 9.8
+linear_damp = 0.1
+angular_damp = 1.0
+priority = 0.0
+monitoring = true
+monitorable = true
+collision_layer = 1
+collision_mask = 1
+audio_bus_override = false
+audio_bus_name = "Master"
+reverb_bus_enable = false
+reverb_bus_name = "Master"
+reverb_bus_amount = 0.0
+reverb_bus_uniformity = 0.0
+_sections_unfolded = [ "Audio Bus", "Collision" ]
+
+[node name="zone" type="CollisionShape" parent="Impact" index="0"]
+
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0 )
+shape = SubResource( 5 )
+disabled = false
+_sections_unfolded = [ "Transform" ]
 
 
