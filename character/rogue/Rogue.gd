@@ -14,8 +14,8 @@ onready var _hook_ray = $Camera/Hook
 # projectile
 onready var _arrow_scene = load("res://character/rogue/Arrow.tscn")
 
-func _ready():
-	._ready()
+#func _ready():
+#	._ready()
 
 
 # regular update function
@@ -31,9 +31,7 @@ func _physics_process(delta):
 	# fire an arrow
 	if Input.is_action_just_pressed('attack'):
 		var arrow = _arrow_scene.instance()
-		arrow.prepare(self)
-		_root_node.add_child(arrow)
-		pass
+		arrow.initialize(self)
 	
 	# use grappling hook
 	if Input.is_action_just_pressed('secondary'):

@@ -28,7 +28,7 @@ var _push_force = Vector3()        # force to apply to the body
 var _jump_timer = 0                # reaction timer for jumping
 
 # nodes...
-onready var _root_node   = get_tree().get_root()
+onready var root_node    = get_tree().get_root()
 onready var _camera_node = $Camera
 onready var _feet_node   = $Feet
 onready var _model_node  = $Model
@@ -153,9 +153,19 @@ func _process_vertical_velocity(movement, delta):
 
 ## public methods ##
 
-# add a push back force to the character
+# add force or damage the character
 func add_force(force):
 	_push_force += force
+
+func add_damage(damage): 
+	health -= damage
+	if health < 0: health = 0
+
+# add force and damages to the character
+func apply_damage(damage, force):
+	_push_force += force
+	health      -= damage
+	if health < 0: health = 0
 
 # allow to set both head and body control in one call
 func set_head_body_move(v):
@@ -179,13 +189,12 @@ func is_enemy(other):
 func get_forward_look():
 	return _camera_node.global_transform.basis.xform(Vector3(0, 0, -1)).normalized()
 
-# return the position of the head in global space
-func get_head_position():
-	return _camera_node.global_transform.origin
+# return position and rotation of the head
+func get_head_position(): return _camera_node.global_transform.origin
+func get_head_basis():    return _camera_node.global_transform.basis
 
-# return the basis of the head
-func get_head_basis():
-	return _camera_node.global_transform.basis
+# return the emitter of the character (for projectiles)
+func get_emitter(): return _camera_node.global_transform.origin
 
 ## STATIC FUNCTIONS ##
 

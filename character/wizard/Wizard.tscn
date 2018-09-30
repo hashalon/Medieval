@@ -100,7 +100,8 @@ team = 0
 health = 100
 bolt_damage = 8
 downthrust_speed = 2.0
-impact_force = 15.0
+downthrust_damage = 20
+downthrust_force = 15.0
 
 [node name="Camera" type="Camera" parent="." index="0"]
 

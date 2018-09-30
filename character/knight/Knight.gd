@@ -27,8 +27,8 @@ onready var _sword_zone  = $Camera/Sword
 const ALMOST_ONE = 0.99
 
 
-func _ready():
-	._ready()
+#func _ready():
+#	._ready()
 
 
 # regular update function
@@ -106,8 +106,7 @@ func _push_enemies():
 		if is_enemy(obj): 
 			var dir = _velocity.normalized()
 			if dir.y < EPSILON_IMPULSE: dir.y = EPSILON_IMPULSE
-			obj.add_force(dir * charge_force)
-			# TODO: damages
+			obj.apply_damage(charge_damage, dir * charge_force)
 
 
 # swipe the sword and push-damage the enemies
@@ -120,12 +119,10 @@ func _swipe_sword(swipe_left):
 	var bodies = _sword_zone.get_overlapping_bodies()
 	for body in bodies:
 		if is_enemy(body):
-			body.add_force(force)
 			# damage the character
-
-
+			body.apply_damage(sword_damage, force)
 
 ## public methods ##
-func add_force(force):
+func apply_damage(damage, force):
 	# TODO: check direction of force when shield is raised
-	.add_force(force)
+	.apply_damage(damage, force)

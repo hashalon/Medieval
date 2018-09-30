@@ -3,7 +3,7 @@
 [ext_resource path="res://base.gd" type="Script" id=1]
 [ext_resource path="res://jupiter.png" type="Texture" id=2]
 [ext_resource path="res://character/Character.tscn" type="PackedScene" id=3]
-[ext_resource path="res://character/wizard/Wizard.tscn" type="PackedScene" id=4]
+[ext_resource path="res://character/dragonewt/Dragonewt.tscn" type="PackedScene" id=4]
 
 [sub_resource type="BoxShape" id=1]
 
@@ -71,7 +71,7 @@ subdivide_width = 0
 subdivide_height = 0
 subdivide_depth = 0
 
-[node name="Node" type="Node"]
+[node name="Node" type="Node" index="0"]
 
 script = ExtResource( 1 )
 
@@ -261,8 +261,9 @@ size = 1.0
 near = 0.05
 far = 100.0
 
-[node name="Wizard" parent="." index="7" instance=ExtResource( 4 )]
+[node name="Dragonewt" parent="." index="7" instance=ExtResource( 4 )]
 
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.36938, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.10317, 0 )
+fire_force = 2
 
 

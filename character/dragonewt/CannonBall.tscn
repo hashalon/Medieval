@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://character/dragonewt/CannonBall.gd" type="Script" id=1]
 
@@ -11,6 +11,10 @@ radial_segments = 64
 rings = 32
 is_hemisphere = false
 
+[sub_resource type="SphereShape" id=2]
+
+radius = 1.0
+
 [node name="CannonBall" type="RayCast"]
 
 enabled = true
@@ -18,9 +22,13 @@ exclude_parent = false
 cast_to = Vector3( 0, 0, -1 )
 collision_mask = 1
 script = ExtResource( 1 )
-lifetime = 5
 move_speed = 30
+lifetime = 5
 gravity = 30
+impact_damage = 30
+impact_force = 30
+explosion_damage = 20
+explosion_force = 20
 
 [node name="model" type="MeshInstance" parent="." index="0"]
 
@@ -55,5 +63,33 @@ mesh = SubResource( 1 )
 skeleton = NodePath("..")
 material/0 = null
 _sections_unfolded = [ "Transform" ]
+
+[node name="Explosion" type="Area" parent="." index="2"]
+
+input_ray_pickable = false
+input_capture_on_drag = false
+space_override = 0
+gravity_point = false
+gravity_distance_scale = 0.0
+gravity_vec = Vector3( 0, -1, 0 )
+gravity = 9.8
+linear_damp = 0.1
+angular_damp = 1.0
+priority = 0.0
+monitoring = true
+monitorable = true
+collision_layer = 1
+collision_mask = 1
+audio_bus_override = false
+audio_bus_name = "Master"
+reverb_bus_enable = false
+reverb_bus_name = "Master"
+reverb_bus_amount = 0.0
+reverb_bus_uniformity = 0.0
+
+[node name="Radius" type="CollisionShape" parent="Explosion" index="0"]
+
+shape = SubResource( 2 )
+disabled = false
 
 

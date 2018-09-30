@@ -1,20 +1,21 @@
-extends RayCast
+extends "res://character/Projectile.gd"
 
-export var lifetime   = 5
-export var move_speed = 30
-export var gravity    = 30
+export var gravity          = 30
+export var impact_damage    = 30
+export var impact_force     = 30
+export var explosion_damage = 20
+export var explosion_force  = 20
 
-var _player   = null
-var _velocity = Vector3()
+
+onready var _explosion_zone   = $Explosion
+onready var _explosion_radius = $Explosion/Radius.shape.radius
 
 func _ready():
-	pass
+	add_exception(_explosion_zone)
+	
 
 # move projectile quickly
 func _physics_process(delta):
-	# restrict the life time of the projectile
-	if lifetime > 0: lifetime -= delta
-	else: explode()
 	
 	# move the projectile
 	_velocity.y -= gravity * delta
@@ -26,20 +27,27 @@ func _physics_process(delta):
 		var obj = get_collider()
 		if _player.is_enemy(obj):
 			# TODO: damage enemy
-			pass
-		explode()
-	
-
-# the player who generated this projectile
-func prepare(player):
-	_player = player
-	add_exception(player)
-	var dir = player.get_forward_look()
-	look_at(dir, Vector3(0, 1, 0))
-	global_transform.origin = player.get_head_position()
-	_velocity = dir * move_speed
+			
+			# push back the enemy
+			var dir = _velocity.normalized()
+			if dir.y < EPSILON_IMPULSE: dir.y = EPSILON_IMPULSE
+			obj.apply_damage(impact_damage, dir * impact_force)
+			
+		destroy()
 
 # explode and damage enemies in the radius
-func explode():
-	print("BOOM!")
-	queue_free()
+func destroy():
+	# apply damage and force to all bodies in the explosion radius
+	var bodies = _explosion_zone.get_overlapping_bodies()
+	for body in bodies:
+		if _player.is_enemy(body):
+			
+			# compute the ratio of exposition to the explosion
+			var vec   = body.global_transform.origin - global_transform.origin
+			var dist  = vec.length()
+			var power = (_explosion_radius - dist) / _explosion_radius
+			
+			# damage the enemy and push him back
+			body.apply_damage(power * explosion_damage, vec.normalized() * power * explosion_force)
+	
+	.destroy()
