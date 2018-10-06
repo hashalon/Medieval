@@ -12,13 +12,15 @@ export var charge_force  = 10.0
 # sword attributes
 export var sword_damage = 50
 export var sword_force  = 5.0
+export var sword_speed  = 1.0
 
 export var downthrust_speed = 10
 
 # private members
+var _swing_left    = false
+var _swing_timer   = 0
 var _shield_raised = false
 var _charge_timer  = 0
-var _is_downthrusting = false
 
 # nodes...
 onready var _sword_zone  = $Camera/Sword
@@ -32,12 +34,15 @@ const ALMOST_ONE = 0.99
 
 
 # regular update function
-func _physics_process(delta):
+func _process(delta):
 	if not is_controlled: return
 
 	# reset state
 	_shield_raised = false
 	current_speed  = move_speed
+	
+	if _swing_timer > 0:
+		_swing_timer -= delta
 
 	# if we are charging
 	if _charge_timer > 0:
@@ -59,10 +64,17 @@ func _physics_process(delta):
 
 	# swing the sword
 	elif Input.is_action_pressed('attack'):
-		# find direction of swipe: either left or right
-		_swipe_sword(false)
+		# alternate the direction of swing
+		if _swing_timer <= 0:
+			_swipe_sword(_swing_left)
+			_swing_left  = not _swing_left
+			_swing_timer = sword_speed
+	
+	else:
+		# simply reset the direction of swing
+		_swing_left = true
 		
-	._physics_process(delta)
+	._process(delta)
 
 
 # setup the character to start a charge

@@ -1,5 +1,16 @@
 # Notes to improve the game
 
+Use a reduced color palette for the game (PICO-8 or NES)
+
+create a texture for defining color shading:
+- all colors on first column and consecutive shading for each row
+- each entity will use a gray scale texture encoding the row to use
+- => one gray scale texture for each character of each team
+- => gives a super cool retro lighting effect
+
+https://hackernoon.com/pico-8-lighting-part-1-thin-dark-line-8ea15d21fed7
+
+
 ## Classes
 
 Name      | Specie    | Primary        | Secondary      | Both            | Air          |

@@ -1,10 +1,12 @@
 extends "res://character/Character.gd"
 
 # attributes
-export var hook_speed  = 200.0
+export var fire_speed = 1.0
+export var hook_speed = 200.0
 # use the ray itself to define the maximum distance
 
 # private members
+var _fire_timer = 0
 var _hook_point = null # Vector3
 var _jump_count = 0
 
@@ -19,8 +21,11 @@ onready var _arrow_scene = load("res://character/rogue/Arrow.tscn")
 
 
 # regular update function
-func _physics_process(delta):
+func _process(delta):
 	if not is_controlled: return
+	
+	if _fire_timer > 0:
+		_fire_timer -= delta
 	
 	# tells the user if he can fire the grappling-hook
 	# (keep the ray always enabled so that we can see 
@@ -30,8 +35,10 @@ func _physics_process(delta):
 	
 	# fire an arrow
 	if Input.is_action_just_pressed('attack'):
-		var arrow = _arrow_scene.instance()
-		arrow.initialize(self)
+		if _fire_timer <= 0:
+			var arrow = _arrow_scene.instance()
+			arrow.initialize(self)
+			_fire_timer = fire_speed
 	
 	# use grappling hook
 	if Input.is_action_just_pressed('secondary'):
@@ -56,7 +63,7 @@ func _physics_process(delta):
 		_jump_count += 1
 		if _jump_count < 2: _velocity.y = jump_speed
 	
-	._physics_process(delta)
+	._process(delta)
 
 # hook and unhook
 func _hook_begin():

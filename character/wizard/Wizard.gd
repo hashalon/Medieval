@@ -1,13 +1,22 @@
 extends "res://character/Character.gd"
 
+# TODO: turn lighting bolt into a machinegun like weapon
+
 # attributes
-export var bolt_damage       = 8
+
+# lightning bolts
+export var bolt_charge_time = 1.0
+export var bolt_dps         = 20
+export var bolt_move_speed  = 3.0
+
+# downthrust attack
 export var downthrust_speed  = 2.0
 export var downthrust_damage = 20
 export var downthrust_force  = 15.0
 
 # private members
-var _is_downthrusting = false
+var _bolt_charge_timer = 0
+var _is_downthrusting  = false
 
 # nodes...
 onready var _bolt_zone   = $Camera/Bolt
@@ -21,10 +30,20 @@ onready var _ball_scene = load("res://character/wizard/MagicBall.tscn")
 
 
 # regular update function
-func _physics_process(delta):
-
+func _process(delta):
+	
+	current_speed = move_speed
+	
+	# firing lightning bolts
+	if Input.is_action_pressed('primary'):
+		current_speed = bolt_move_speed
+		if _bolt_charge_timer <= 0:
+			_lightning_bolt(delta)
+		else:
+			_bolt_charge_timer -= delta
+	
 	# if we are downthrusting
-	if _is_downthrusting:
+	elif _is_downthrusting:
 		_velocity.y -= downthrust_speed * delta
 		if is_grounded():
 			_is_downthrusting = false
@@ -37,24 +56,24 @@ func _physics_process(delta):
 
 	# fire a lightning bolt (shotgun like)
 	elif Input.is_action_just_pressed('attack'):
-		_lightning_bolt()
+		_bolt_charge_timer = bolt_charge_time
 
 	# throw a magic-ball that bound against walls (MisterMV)
 	elif Input.is_action_just_pressed('secondary'):
 		_magic_ball()
 
-	._physics_process(delta)
+	._process(delta)
 
 
-
-# throw a lightning bolt
-func _lightning_bolt():
+# throw continuous lightning bolts
+func _lightning_bolt(delta):
 
 	# find bodies in the zone of the bolt and apply damage to them
 	var bodies = _bolt_zone.get_overlapping_bodies()
+	var damage = bolt_dps * delta
 	for body in bodies:
 		if is_enemy(body):
-			body.add_damage(bolt_damage) # Damage enemies
+			body.add_damage(damage) # Damage enemies
 
 # throw a magic ball
 func _magic_ball():

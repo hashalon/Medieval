@@ -7,7 +7,8 @@ onready var _damage_zone = $Damage
 func _ready():
 	add_exception(_damage_zone)
 
-func _physics_process(delta):
+# maybe use _physics_process to detect collisions
+func _process(delta):
 	# detect collisions
 	if is_colliding():
 		var obj = get_collider()
@@ -22,6 +23,8 @@ func _physics_process(delta):
 	for body in bodies:
 		if _player.is_enemy(body):
 			body.add_damage(contact_damage) # damage enemy
+	
+	._process(delta)
 
 # make the ball bounce of the plane defined by the given normal
 func bounce(normal):

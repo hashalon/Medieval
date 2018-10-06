@@ -3,7 +3,8 @@ extends "res://character/Projectile.gd"
 export var impact_damage = 30
 export var impact_force  = 15.0
 
-func _physics_process(delta):
+# maybe use _physics_process to detect collisions
+func _process(delta):
 	# detect collisions
 	if is_colliding():
 		var obj = get_collider()
@@ -18,3 +19,5 @@ func _physics_process(delta):
 		destroy()
 	# move the projectile
 	global_translate(_velocity * delta)
+	
+	._process(delta)

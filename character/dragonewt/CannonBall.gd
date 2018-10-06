@@ -6,16 +6,17 @@ export var impact_force     = 30
 export var explosion_damage = 20
 export var explosion_force  = 20
 
-
 onready var _explosion_zone   = $Explosion
 onready var _explosion_radius = $Explosion/Radius.shape.radius
+
+var _power_ratio = 1
 
 func _ready():
 	add_exception(_explosion_zone)
 	
 
-# move projectile quickly
-func _physics_process(delta):
+# maybe use _physics_process to detect collisions
+func _process(delta):
 	
 	# move the projectile
 	_velocity.y -= gravity * delta
@@ -31,14 +32,23 @@ func _physics_process(delta):
 			# push back the enemy
 			var dir = _velocity.normalized()
 			if dir.y < EPSILON_IMPULSE: dir.y = EPSILON_IMPULSE
-			obj.apply_damage(impact_damage, dir * impact_force)
+			obj.apply_damage(impact_damage * _power_ratio, dir * impact_force * _power_ratio)
 			
 		destroy()
+	
+	._process(delta)
+
+func initialize(player, power_ratio):
+	.initialize(player)
+	_velocity   *= power_ratio
+	_power_ratio = power_ratio
 
 # explode and damage enemies in the radius
 func destroy():
 	# apply damage and force to all bodies in the explosion radius
 	var bodies = _explosion_zone.get_overlapping_bodies()
+	var damage = explosion_damage * _power_ratio
+	var force  = explosion_force  * _power_ratio
 	for body in bodies:
 		if _player.is_enemy(body):
 			
@@ -48,6 +58,6 @@ func destroy():
 			var power = (_explosion_radius - dist) / _explosion_radius
 			
 			# damage the enemy and push him back
-			body.apply_damage(power * explosion_damage, vec.normalized() * power * explosion_force)
+			body.apply_damage(power * damage, vec.normalized() * power * force)
 	
 	.destroy()

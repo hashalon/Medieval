@@ -1,9 +1,17 @@
 extends KinematicBody
 
+# collision layout:
+# 0 : world
+# 1 : neutral
+# 2 : alpha
+# 3 : beta
+# 4 : gamma
+
 enum TEAM{
 	neutral,
 	alpha,
-	beta
+	beta,
+	gamma
 }
 
 # attributes
@@ -71,7 +79,7 @@ func _input(event):
 
 
 # physic synchronized update function
-func _physics_process(delta):
+func _process(delta):
 	# TODO:... when we press the escape key, release the mouse
 	if Input.is_key_pressed(KEY_ESCAPE): 
 		release_mouse()

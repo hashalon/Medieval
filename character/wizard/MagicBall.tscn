@@ -15,12 +15,12 @@ is_hemisphere = false
 
 radius = 0.525128
 
-[node name="MagicBall" type="RayCast"]
+[node name="MagicBall" type="RayCast" index="0"]
 
 enabled = true
 exclude_parent = false
 cast_to = Vector3( 0, 0, -1 )
-collision_mask = 1
+collision_mask = 31
 script = ExtResource( 1 )
 move_speed = 10
 lifetime = 5
@@ -74,14 +74,15 @@ angular_damp = 1.0
 priority = 0.0
 monitoring = true
 monitorable = true
-collision_layer = 1
-collision_mask = 1
+collision_layer = 0
+collision_mask = 30
 audio_bus_override = false
 audio_bus_name = "Master"
 reverb_bus_enable = false
 reverb_bus_name = "Master"
 reverb_bus_amount = 0.0
 reverb_bus_uniformity = 0.0
+_sections_unfolded = [ "Collision" ]
 
 [node name="shape" type="CollisionShape" parent="Damage" index="0"]
 

@@ -264,6 +264,9 @@ far = 100.0
 [node name="Dragonewt" parent="." index="7" instance=ExtResource( 4 )]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.10317, 0 )
-fire_force = 2
+fire_speed = 1.0
+min_charge_time = 0.1
+max_charge_time = 0.7
+hover_fall_speed = 0.1
 
 

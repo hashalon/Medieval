@@ -1,12 +1,22 @@
 extends "res://character/Character.gd"
 
-# attributes
-export var fire_damage     = 8
-export var fire_force      = 2
-export var cannon_pushback = 10.0
-export var hover_fall      = 0.1
+# attributes...
 
-var _ray_length = 0
+# primary fire
+export var fire_damage = 8
+export var fire_force  = 2.0
+export var fire_speed  = 1.0
+# secondary fire
+export var min_charge_time = 0.1 # minimal charge amount
+export var max_charge_time = 0.7 # how long it takes to fully charge the cannon
+export var cannon_pushback = 10.0
+# hovering
+export var hover_fall_speed = 0.1
+
+var _ray_length   = 0
+var _fire_timer   = 0
+var _charge_timer = 0
+var _is_charging  = false
 
 # get rays for the shotgun
 onready var _rays = $Camera.get_children()
@@ -23,22 +33,44 @@ func _ready():
 
 
 # regular update function
-func _physics_process(delta):
-
+func _process(delta):
+	
+	if _fire_timer > 0:
+		_fire_timer -= delta
+	
+	# prepare cannon ball
+	if Input.is_action_just_pressed('secondary'):
+		_is_charging = true
+	
+	# release cannon ball
+	elif Input.is_action_just_released('secondary'):
+		
+		# fire a large cannon-ball that explode on impact
+		if _charge_timer > min_charge_time:
+			if _charge_timer > max_charge_time:
+				_cannon_ball(1)
+			else:
+				var ratio = _charge_timer / max_charge_time
+				_cannon_ball(ratio)
+		
+		_is_charging  = false
+		_charge_timer = 0
+	
+	# charging the fire ball, block primary fire
+	elif _is_charging:
+		_charge_timer += delta
+	
 	# fire small sparks (shotgun like)
-	if Input.is_action_just_pressed('attack'):
+	elif Input.is_action_just_pressed('attack'):
 		_fire_sparks()
-
-	# fire a large cannon-ball that explode on impact
-	elif Input.is_action_just_pressed('secondary'):
-		_cannon_ball()
+	
 	
 	# allow the wizard to hover
 	if not is_grounded():
 		if Input.is_action_pressed('jump') and _velocity.y < 0:
-			_velocity.y = -hover_fall
+			_velocity.y = -hover_fall_speed
 	
-	._physics_process(delta)
+	._process(delta)
 
 
 
@@ -64,14 +96,14 @@ func _fire_sparks():
 	# apply damages
 	for character in characters:
 		var ratio = characters[character]
-		apply_damage(ratio * damage, get_forward_look() * ratio * fire_force)
+		apply_damage(ratio * fire_damage, get_forward_look() * ratio * fire_force)
 
 # fire a cannon-ball
-func _cannon_ball():
+func _cannon_ball(power_ratio):
 	# apply push back force to self
-	var force = get_forward_look() * -cannon_pushback
+	var force = get_forward_look() * -cannon_pushback * power_ratio
 	add_force(force)
 	
 	# create instance
 	var ball = _ball_scene.instance()
-	ball.initialize(self)
+	ball.initialize(self, power_ratio)
