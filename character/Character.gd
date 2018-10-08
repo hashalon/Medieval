@@ -7,12 +7,23 @@ extends KinematicBody
 # 3 : beta
 # 4 : gamma
 
-enum TEAM{
-	neutral,
-	alpha,
-	beta,
-	gamma
-}
+enum  TEAM{ neutral, alpha, beta, gamma }
+const MANAGER = preload('res://character/Manager.gd')
+
+# constants
+const REACTION_TIME   = 0.2
+const MAX_SLIDES      = 4
+const STEEP_SLOPE     = deg2rad(45)
+const MAX_ANGLE       = deg2rad(90)
+const EPSILON_IMPULSE = 0.2
+# inertia of objects on the ground and in the air
+const INERTIA_GROUND = 0.9
+const INERTIA_AIR    = 0.99
+# used to alter the gravity applied when doing a high jump or low jump
+const FALL_MULTIPLIER = 3
+const JUMP_MULTIPLIER = 2
+# angle of direction to tell if the character can run forward
+const RUN_ANGLE_LIMIT = deg2rad(90 - (70/2))
 
 # attributes
 export var is_controlled = true
@@ -21,7 +32,7 @@ export var move_speed  = 7.5
 export var jump_speed  = 7.5
 export var gravity     = 10.0
 
-export var team   = TEAM.neutral
+export(TEAM) var team = TEAM.neutral
 export var health = 100
 
 # modifiers
@@ -36,32 +47,20 @@ var _push_force = Vector3()        # force to apply to the body
 var _jump_timer = 0                # reaction timer for jumping
 
 # nodes...
-onready var root_node    = get_tree().get_root()
+onready var manager = get_tree().get_root().get_node('Root')
 onready var _camera_node = $Camera
 onready var _feet_node   = $Feet
 onready var _model_node  = $Model
 
-# constants
-const REACTION_TIME   = 0.2
-const MAX_SLIDES      = 4
-const STEEP_SLOPE     = deg2rad(45)
-const MAX_ANGLE       = deg2rad(90)
-const EPSILON_IMPULSE = 0.1
-# inertia of objects on the ground and in the air
-const INERTIA_GROUND = 0.9
-const INERTIA_AIR    = 0.99
-# used to alter the gravity applied when doing a high jump or low jump
-const FALL_MULTIPLIER = 3
-const JUMP_MULTIPLIER = 2
-# angle of direction to tell if the character can run forward
-const RUN_ANGLE_LIMIT = deg2rad(90 - (70/2))
+
 
 # when the character is created
 func _ready():
 	if is_controlled: 
-		capture_mouse()
-		_model_node.visible = false
-		_camera_node.make_current()
+		make_controllable()
+	if team != TEAM.neutral:
+		set_team(team)
+	manager.add_character(self)
 		
 # manage mouse movements
 func _input(event):
@@ -72,19 +71,10 @@ func _input(event):
 		rotation.y -= event.relative.x * sensitivity.x
 		_camera_node.rotation.x = clamp(_camera_node.rotation.x 
 			- event.relative.y * sensitivity.y, -MAX_ANGLE, MAX_ANGLE)
-	
-	if Input.is_key_pressed(KEY_ESCAPE): 
-		get_tree().quit()
-
 
 
 # physic synchronized update function
 func _process(delta):
-	# TODO:... when we press the escape key, release the mouse
-	if Input.is_key_pressed(KEY_ESCAPE): 
-		release_mouse()
-		is_controlled = false
-		get_tree().quit()
 	
 	# check for ground normal
 	if _feet_node.is_colliding():
@@ -101,6 +91,9 @@ func _process(delta):
 	_velocity += _push_force
 	_push_force = Vector3()
 	move_and_slide(_velocity, _normal, current_speed / 2, MAX_SLIDES, STEEP_SLOPE)
+	
+	# check health
+	if health <= 0: die()
 
 
 # process the inputs to get the direction of movement
@@ -175,6 +168,23 @@ func apply_damage(damage, force):
 	health      -= damage
 	if health < 0: health = 0
 
+# set this character as the controlled one
+func make_controllable():
+	is_controlled = true
+	MANAGER.capture_mouse()
+	_model_node.visible = false
+	_camera_node.make_current()
+
+# set the team of the character
+func set_team(team):
+	self.team = team
+	# TODO: change collider layer and weapon masks...
+
+# kill the character
+func die():
+	manager.remove_character(self)
+	is_controlled = false
+
 # allow to set both head and body control in one call
 func set_head_body_move(v):
 	can_move_head = v
@@ -205,14 +215,6 @@ func get_head_basis():    return _camera_node.global_transform.basis
 func get_emitter(): return _camera_node.global_transform.origin
 
 ## STATIC FUNCTIONS ##
-
-# capture and release mouse
-static func capture_mouse():
-	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-
-static func release_mouse():
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 # return true if the angle is in the defined range
 static func in_angular_range(angle):

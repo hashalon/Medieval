@@ -90,6 +90,7 @@ jump_speed = 7.5
 gravity = 10.0
 team = 0
 health = 100
+fire_speed = 1.0
 hook_speed = 200.0
 
 [node name="Camera" type="Camera" parent="." index="0"]

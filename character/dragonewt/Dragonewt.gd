@@ -7,9 +7,10 @@ export var fire_damage = 8
 export var fire_force  = 2.0
 export var fire_speed  = 1.0
 # secondary fire
-export var min_charge_time = 0.1 # minimal charge amount
-export var max_charge_time = 0.7 # how long it takes to fully charge the cannon
-export var cannon_pushback = 10.0
+export var min_charge_time  = 0.05 # minimal charge amount
+export var max_charge_time  = 2.0  # how long it takes to fully charge the cannon
+export var cannon_pushback  = 10.0
+export var min_charge_ratio = 0.5  # how powerfull is the cannon ball when minimal charge is applied
 # hovering
 export var hover_fall_speed = 0.1
 
@@ -50,8 +51,10 @@ func _process(delta):
 			if _charge_timer > max_charge_time:
 				_cannon_ball(1)
 			else:
-				var ratio = _charge_timer / max_charge_time
-				_cannon_ball(ratio)
+				# charge ratio => power amount
+				var ratio = (_charge_timer - min_charge_time) / (max_charge_time - min_charge_time)
+				var power = min_charge_ratio + ratio * (1 - min_charge_ratio)
+				_cannon_ball(power)
 		
 		_is_charging  = false
 		_charge_timer = 0
@@ -72,7 +75,17 @@ func _process(delta):
 	
 	._process(delta)
 
-
+# set team of character
+func set_team(team):
+	.set_team(team)
+	var nb_bit = -1
+	match team:
+		TEAM.alpha: nb_bit = 2
+		TEAM.beta:  nb_bit = 3
+		TEAM.gamma: nb_bit = 4
+	if nb_bit != -1:
+		for ray in _rays:
+			ray.set_collision_mask_bit(nb_bit, false)
 
 # throw a lightning bolt
 func _fire_sparks():
@@ -96,7 +109,7 @@ func _fire_sparks():
 	# apply damages
 	for character in characters:
 		var ratio = characters[character]
-		apply_damage(ratio * fire_damage, get_forward_look() * ratio * fire_force)
+		character.apply_damage(ratio * fire_damage, get_forward_look() * ratio * fire_force)
 
 # fire a cannon-ball
 func _cannon_ball(power_ratio):

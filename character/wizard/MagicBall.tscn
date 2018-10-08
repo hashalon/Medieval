@@ -15,7 +15,7 @@ is_hemisphere = false
 
 radius = 0.525128
 
-[node name="MagicBall" type="RayCast" index="0"]
+[node name="MagicBall" type="RayCast"]
 
 enabled = true
 exclude_parent = false

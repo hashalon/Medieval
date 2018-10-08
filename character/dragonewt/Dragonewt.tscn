@@ -91,9 +91,13 @@ gravity = 10.0
 team = 0
 health = 100
 fire_damage = 8
-fire_force = 2
+fire_force = 2.0
+fire_speed = 1.0
+min_charge_time = 0.1
+max_charge_time = 0.7
 cannon_pushback = 10.0
-hover_fall = 0.1
+min_charge_ratio = 0.5
+hover_fall_speed = 0.1
 
 [node name="Camera" type="Camera" parent="." index="0"]
 

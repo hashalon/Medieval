@@ -65,6 +65,10 @@ func _process(delta):
 	
 	._process(delta)
 
+# set team of character
+#func set_team(team):
+#	.set_team(team)
+
 # hook and unhook
 func _hook_begin():
 	can_move_body = false

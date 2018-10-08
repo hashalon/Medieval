@@ -23,6 +23,10 @@ func _process(delta):
 	global_translate(_velocity * delta)
 	look_at(global_transform.origin + _velocity, Vector3(0, 1, 0))
 	
+	._process(delta)
+
+# detect collision for explosions
+func _physics_process(delta):
 	# detect collisions
 	if is_colliding():
 		var obj = get_collider()
@@ -35,13 +39,17 @@ func _process(delta):
 			obj.apply_damage(impact_damage * _power_ratio, dir * impact_force * _power_ratio)
 			
 		destroy()
-	
-	._process(delta)
 
 func initialize(player, power_ratio):
 	.initialize(player)
 	_velocity   *= power_ratio
 	_power_ratio = power_ratio
+	
+	# update the collision mask of the projectile
+	match _player.team:
+		CHARACTER.TEAM.alpha: _explosion_zone.set_collision_mask_bit(2, false)
+		CHARACTER.TEAM.beta:  _explosion_zone.set_collision_mask_bit(3, false)
+		CHARACTER.TEAM.gamma: _explosion_zone.set_collision_mask_bit(4, false)
 
 # explode and damage enemies in the radius
 func destroy():

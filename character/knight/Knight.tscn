@@ -2,9 +2,10 @@
 
 [ext_resource path="res://character/knight/Knight.gd" type="Script" id=1]
 
-[sub_resource type="SphereShape" id=1]
+[sub_resource type="CapsuleShape" id=1]
 
-radius = 0.6
+radius = 1.5
+height = 2.5
 
 [sub_resource type="CapsuleShape" id=2]
 
@@ -92,7 +93,7 @@ sensitivity = Vector2( 0.003, 0.0025 )
 move_speed = 7.5
 jump_speed = 7.5
 gravity = 10.0
-team = 0
+team = null
 health = 100
 shield_speed = 3.0
 charge_speed = 50.0
@@ -100,7 +101,8 @@ charge_time = 0.05
 charge_damage = 30
 charge_force = 10.0
 sword_damage = 50
-sword_force = 5.0
+sword_force = 10.0
+sword_speed = 0.25
 downthrust_speed = 10
 
 [node name="Camera" type="Camera" parent="." index="0"]
@@ -146,7 +148,7 @@ _sections_unfolded = [ "Collision" ]
 
 [node name="range" type="CollisionShape" parent="Camera/Sword" index="0"]
 
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1 )
+transform = Transform( -1.62921e-07, 0, 1, 0, 1, 0, -1, 0, -1.62921e-07, 0, 0, -1 )
 shape = SubResource( 1 )
 disabled = false
 _sections_unfolded = [ "Transform" ]

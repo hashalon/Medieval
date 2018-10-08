@@ -7,7 +7,10 @@ extends "res://character/Character.gd"
 # lightning bolts
 export var bolt_charge_time = 1.0
 export var bolt_dps         = 20
-export var bolt_move_speed  = 3.0
+export var bolt_move_speed  = 2.0
+
+# magic ball
+export var magic_ball_time = 2.0
 
 # downthrust attack
 export var downthrust_speed  = 2.0
@@ -16,6 +19,7 @@ export var downthrust_force  = 15.0
 
 # private members
 var _bolt_charge_timer = 0
+var _magic_ball_timer  = 0
 var _is_downthrusting  = false
 
 # nodes...
@@ -32,18 +36,13 @@ onready var _ball_scene = load("res://character/wizard/MagicBall.tscn")
 # regular update function
 func _process(delta):
 	
+	if _magic_ball_timer > 0:
+		_magic_ball_timer -= delta
+	
 	current_speed = move_speed
 	
-	# firing lightning bolts
-	if Input.is_action_pressed('primary'):
-		current_speed = bolt_move_speed
-		if _bolt_charge_timer <= 0:
-			_lightning_bolt(delta)
-		else:
-			_bolt_charge_timer -= delta
-	
 	# if we are downthrusting
-	elif _is_downthrusting:
+	if _is_downthrusting:
 		_velocity.y -= downthrust_speed * delta
 		if is_grounded():
 			_is_downthrusting = false
@@ -54,16 +53,40 @@ func _process(delta):
 		_is_downthrusting = true
 		_velocity.y = -downthrust_speed
 
-	# fire a lightning bolt (shotgun like)
+	# fire lightning bolts like
 	elif Input.is_action_just_pressed('attack'):
 		_bolt_charge_timer = bolt_charge_time
+	
+	# firing lightning bolts
+	elif Input.is_action_pressed('attack'):
+		current_speed = bolt_move_speed
+		if _bolt_charge_timer > 0:
+			_bolt_charge_timer -= delta
+		else:
+			_lightning_bolt(delta)
 
 	# throw a magic-ball that bound against walls (MisterMV)
 	elif Input.is_action_just_pressed('secondary'):
-		_magic_ball()
+		if _magic_ball_timer <= 0:
+			_magic_ball_timer = magic_ball_time
+			_magic_ball()
 
 	._process(delta)
 
+
+# set team of character
+func set_team(team):
+	.set_team(team)
+	match team:
+		TEAM.alpha:
+			_bolt_zone  .set_collision_mask_bit(2, false)
+			_impact_zone.set_collision_mask_bit(2, false)
+		TEAM.beta:
+			_bolt_zone  .set_collision_mask_bit(3, false)
+			_impact_zone.set_collision_mask_bit(3, false)
+		TEAM.gamma:
+			_bolt_zone  .set_collision_mask_bit(4, false)
+			_impact_zone.set_collision_mask_bit(4, false)
 
 # throw continuous lightning bolts
 func _lightning_bolt(delta):

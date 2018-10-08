@@ -6,7 +6,9 @@ export var lifetime   = 5
 var _player   = null
 var _velocity = Vector3()
 
-const EPSILON_IMPULSE = 0.1
+const CHARACTER       = preload('res://character/Character.gd')
+const EPSILON_IMPULSE = CHARACTER.EPSILON_IMPULSE
+
 
 func _process(delta):
 	# restrict the life time of the projectile
@@ -26,6 +28,12 @@ func initialize(player):
 	global_transform.basis  = _player.get_head_basis()
 	# set movement of the projectile
 	_velocity = _player.get_forward_look() * move_speed
+	
+	# update the collision mask of the projectile
+	match _player.team:
+		CHARACTER.TEAM.alpha: set_collision_mask_bit(2, false)
+		CHARACTER.TEAM.beta:  set_collision_mask_bit(3, false)
+		CHARACTER.TEAM.gamma: set_collision_mask_bit(4, false)
 
 # destroy the projectile once its life is over
 func destroy():
