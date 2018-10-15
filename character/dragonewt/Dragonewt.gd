@@ -35,6 +35,7 @@ func _ready():
 
 # regular update function
 func _process(delta):
+	if not is_network_master(): return
 	
 	if _fire_timer > 0:
 		_fire_timer -= delta

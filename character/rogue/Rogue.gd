@@ -22,7 +22,7 @@ onready var _arrow_scene = load("res://character/rogue/Arrow.tscn")
 
 # regular update function
 func _process(delta):
-	if not is_controlled: return
+	if not is_network_master(): return
 	
 	if _fire_timer > 0:
 		_fire_timer -= delta

@@ -36,7 +36,7 @@ const SHIELD_ANGLE = 50   # angle of protection provided by the shield
 
 # regular update function
 func _process(delta):
-	if not is_controlled: return
+	if not is_network_master(): return
 
 	# reset state
 	_shield_raised = false
@@ -78,7 +78,7 @@ func _process(delta):
 
 # we need to use a synchronized process for the charge
 func _physics_process(delta):
-	if not is_controlled: return
+	if not is_network_master(): return
 	
 	# detect enemies on the path and collide with them
 	if _charge_timer > 0:

@@ -35,6 +35,7 @@ onready var _ball_scene = load("res://character/wizard/MagicBall.tscn")
 
 # regular update function
 func _process(delta):
+	if not is_network_master(): return
 	
 	if _magic_ball_timer > 0:
 		_magic_ball_timer -= delta

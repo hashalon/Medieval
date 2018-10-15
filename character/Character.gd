@@ -7,10 +7,11 @@ extends KinematicBody
 # 3 : beta
 # 4 : gamma
 
-enum  TEAM{ neutral, alpha, beta, gamma }
+enum  TEAM { neutral, alpha, beta, gamma }
 const MANAGER = preload('res://character/Manager.gd')
 
-# constants
+
+## CONSTANTS ##
 const REACTION_TIME   = 0.2
 const MAX_SLIDES      = 4
 const STEEP_SLOPE     = deg2rad(45)
@@ -25,8 +26,8 @@ const JUMP_MULTIPLIER = 2
 # angle of direction to tell if the character can run forward
 const RUN_ANGLE_LIMIT = deg2rad(90 - (70/2))
 
-# attributes
-export var is_controlled = true
+
+## ATTRIBUTES ##
 export var sensitivity = Vector2(0.003, 0.0025)
 export var move_speed  = 7.5
 export var jump_speed  = 7.5
@@ -35,36 +36,46 @@ export var gravity     = 10.0
 export(TEAM) var team = TEAM.neutral
 export var health = 100
 
-# modifiers
+
+## MODIFIERS ##
 onready var current_speed = move_speed
 var can_move_head = true
 var can_move_body = true
 
-# private members
+
+## PRIVATES ##
 var _velocity   = Vector3()        # velocity to apply
 var _normal     = Vector3(0, 1, 0) # normal of the ground
 var _push_force = Vector3()        # force to apply to the body
 var _jump_timer = 0                # reaction timer for jumping
 
-# nodes...
+
+## NODES ##
 onready var manager = get_tree().get_root().get_node('Root')
 onready var _camera_node = $Camera
 onready var _feet_node   = $Feet
 onready var _model_node  = $Model
 
 
+## SLAVES ##
+slave var _slave_position = Vector3()
+slave var _slave_velocity = Vector3()
+
+
+## ENGINE'S METHODS ##
 
 # when the character is created
 func _ready():
-	if is_controlled: 
+	if is_network_master(): 
 		make_controllable()
 	if team != TEAM.neutral:
 		set_team(team)
 	manager.add_character(self)
-		
+
+
 # manage mouse movements
 func _input(event):
-	if not is_controlled: return
+	if not is_network_master(): return
 	
 	# handle head movements
 	if event is InputEventMouseMotion and can_move_head:
@@ -75,30 +86,38 @@ func _input(event):
 
 # physic synchronized update function
 func _process(delta):
-	
-	# check for ground normal
-	if _feet_node.is_colliding():
-		_normal = _feet_node.get_collision_normal()
-	else:
-		_normal = Vector3(0, 1, 0)
+	if is_network_master():
+		# check for ground normal
+		#_normal = _feet_node.get_collision_normal() if _feet_node.is_colliding() else Vector3(0, 1, 0)
+		if _feet_node.is_colliding():
+			_normal = _feet_node.get_collision_normal()
+		else:
+			_normal = Vector3(0, 1, 0)
+			
+		# handle movement of the body based on inputs
+		if can_move_body:
+			var move = _get_inputs(delta)
+			_process_vertical_velocity(move, delta)
 		
-	# handle movement of the body based on inputs
-	if can_move_body:
-		var move = _get_inputs(delta)
-		_process_vertical_velocity(move, delta)
+		# apply the velocity
+		_velocity += _push_force
+		_push_force = Vector3()
+		
+		# send pose to others
+		rpc_unreliable('set_pose', translation, _velocity, rotation.y, _camera_node.rotation.x)
 	
-	# apply the velocity
-	_velocity += _push_force
-	_push_force = Vector3()
+	# apply for all (local and remotes)
 	move_and_slide(_velocity, _normal, current_speed / 2, MAX_SLIDES, STEEP_SLOPE)
 	
 	# check health
 	if health <= 0: die()
 
 
+## PRIVATE METHODS ##
+
 # process the inputs to get the direction of movement
 func _get_inputs(delta):
-	if not is_controlled: return Vector3()
+	if not is_network_master(): return Vector3()
 	
 	# we may want to jump, process jump reaction time
 	if Input.is_action_just_pressed('jump'): _jump_timer = REACTION_TIME
@@ -136,7 +155,7 @@ func _process_vertical_velocity(movement, delta):
 		
 		# compute the gravity to apply based on the situation
 		var grav = gravity * delta
-		var high = is_controlled and Input.is_action_pressed('jump')
+		var high = is_network_master() and Input.is_action_pressed('jump')
 		
 		if _velocity.y < 0: vel_y -= grav * FALL_MULTIPLIER # falling
 		elif high:          vel_y -= grav                   # high jump
@@ -152,7 +171,17 @@ func _process_vertical_velocity(movement, delta):
 		_velocity.y += vel_y
 
 
-## public methods ##
+## SLAVE METHODS ##
+
+# synchronize character motion to other peers
+slave func set_pose(pos, vel, rot_h, rot_v):
+	translation = pos
+	_velocity   = vel
+	rotation.y  = rot_h
+	_camera_node.rotation.x = rot_v
+
+
+## PUBLIC METHODS ##
 
 # add force or damage the character
 func add_force(force):
@@ -168,9 +197,10 @@ func apply_damage(damage, force):
 	health      -= damage
 	if health < 0: health = 0
 
+
 # set this character as the controlled one
 func make_controllable():
-	is_controlled = true
+	#is_controlled = true
 	MANAGER.capture_mouse()
 	_model_node.visible = false
 	_camera_node.make_current()
@@ -178,21 +208,29 @@ func make_controllable():
 # set the team of the character
 func set_team(team):
 	self.team = team
-	# TODO: change collider layer and weapon masks...
+	if team != TEAM.neutral:
+		set_collision_layer_bit(1, false)
+		match team:
+			TEAM.alpha: set_collision_layer_bit(2, true)
+			TEAM.beta:  set_collision_layer_bit(3, true)
+			TEAM.gamma: set_collision_layer_bit(4, true)
+
 
 # kill the character
 func die():
 	manager.remove_character(self)
-	is_controlled = false
+	set_network_master(1)
+
 
 # allow to set both head and body control in one call
 func set_head_body_move(v):
 	can_move_head = v
 	can_move_body = v
 
+
 # override class check to allow attacks
 func is_class(type): return type == "Character" or .is_type(type)
-func    get_class(): return "Character"
+func get_class():    return "Character"
 
 # return true if the character is really grounded
 func is_grounded(): return is_on_floor() or _feet_node.is_colliding()
@@ -213,6 +251,7 @@ func get_head_basis():    return _camera_node.global_transform.basis
 
 # return the emitter of the character (for projectiles)
 func get_emitter(): return _camera_node.global_transform.origin
+
 
 ## STATIC FUNCTIONS ##
 

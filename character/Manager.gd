@@ -14,6 +14,7 @@ func _ready():
 
 # manage mouse movements
 func _input(event):
+	# on escape display the menu
 	if Input.is_key_pressed(KEY_ESCAPE): 
 		get_tree().quit()
 
@@ -38,6 +39,7 @@ func get_characters(team, position, radius):
 		if c.team == team and position.distance_to(c.global_transform.origin) < radius:
 			out.append(c)
 	return out
+
 
 ## STATIC FUNCTIONS ##
 

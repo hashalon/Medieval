@@ -33,3 +33,38 @@ batch:
 (2) nun, beast, glutton
 (3) dwarf, summoner
 (4) bard, trickster
+
+
+
+## Menu system
+
+### main menu
+- find a game
+- host a game
+- edit user profile
+- options
+- quit
+
+
+### find server
+(for now just an IP address field, with a connect button and a back button)
+filters
+list of servers
+display server informations before connecting
+
+### host game
+(for now list of maps select only one map and play)
+list of game modes
+list of maps
+play list
+server configuration
+...
+
+### user profile
+select player name
+
+### options
+- video    (resolution, fullscreen)
+- audio    (master, music, effects)
+- controls (mouse sensibility, keyboard inputs)
+
