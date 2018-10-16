@@ -8,7 +8,6 @@ extends KinematicBody
 # 4 : gamma
 
 enum  TEAM { neutral, alpha, beta, gamma }
-const MANAGER = preload('res://character/Manager.gd')
 
 
 ## CONSTANTS ##
@@ -44,6 +43,7 @@ var can_move_body = true
 
 
 ## PRIVATES ##
+var _peer_id    = 0                # peer controlling this character
 var _velocity   = Vector3()        # velocity to apply
 var _normal     = Vector3(0, 1, 0) # normal of the ground
 var _push_force = Vector3()        # force to apply to the body
@@ -51,7 +51,6 @@ var _jump_timer = 0                # reaction timer for jumping
 
 
 ## NODES ##
-onready var manager = get_tree().get_root().get_node('Root')
 onready var _camera_node = $Camera
 onready var _feet_node   = $Feet
 onready var _model_node  = $Model
@@ -66,16 +65,18 @@ slave var _slave_velocity = Vector3()
 
 # when the character is created
 func _ready():
-	if is_network_master(): 
-		make_controllable()
+	if is_controlled():
+		capture_mouse()
+		#_model_node.set_visible(false)
+		_camera_node.make_current()
+	
 	if team != TEAM.neutral:
 		set_team(team)
-	manager.add_character(self)
 
 
 # manage mouse movements
 func _input(event):
-	if not is_network_master(): return
+	if not is_controlled(): return
 	
 	# handle head movements
 	if event is InputEventMouseMotion and can_move_head:
@@ -86,7 +87,9 @@ func _input(event):
 
 # physic synchronized update function
 func _process(delta):
-	if is_network_master():
+	# if character is controlled
+	if is_controlled():
+		
 		# check for ground normal
 		#_normal = _feet_node.get_collision_normal() if _feet_node.is_colliding() else Vector3(0, 1, 0)
 		if _feet_node.is_colliding():
@@ -198,13 +201,6 @@ func apply_damage(damage, force):
 	if health < 0: health = 0
 
 
-# set this character as the controlled one
-func make_controllable():
-	#is_controlled = true
-	MANAGER.capture_mouse()
-	_model_node.visible = false
-	_camera_node.make_current()
-
 # set the team of the character
 func set_team(team):
 	self.team = team
@@ -218,7 +214,7 @@ func set_team(team):
 
 # kill the character
 func die():
-	manager.remove_character(self)
+	# play a death animation
 	set_network_master(1)
 
 
@@ -227,6 +223,12 @@ func set_head_body_move(v):
 	can_move_head = v
 	can_move_body = v
 
+# return true if this character is controlled by this client
+func is_controlled():
+	return _peer_id == get_network_master() #and not get_node('GameMenu').is_game_menu_visible()
+
+func set_peer_id(peer_id):
+	_peer_id = peer_id
 
 # override class check to allow attacks
 func is_class(type): return type == "Character" or .is_type(type)
@@ -258,6 +260,14 @@ func get_emitter(): return _camera_node.global_transform.origin
 # return true if the angle is in the defined range
 static func in_angular_range(angle):
 	return (PI - RUN_ANGLE_LIMIT) > angle and angle > RUN_ANGLE_LIMIT
+
+# capture and release mouse
+static func capture_mouse():
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+static func release_mouse():
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 # slave variables
 #slave var slave_position = Vector3()

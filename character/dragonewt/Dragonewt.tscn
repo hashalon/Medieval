@@ -68,7 +68,7 @@ proximity_fade_enable = false
 distance_fade_enable = false
 _sections_unfolded = [ "Albedo", "Flags", "Metallic" ]
 
-[node name="Dragonewt" type="KinematicBody"]
+[node name="Dragonewt" type="KinematicBody" index="0"]
 
 input_ray_pickable = true
 input_capture_on_drag = false
@@ -83,7 +83,6 @@ axis_lock_angular_z = true
 collision/safe_margin = 0.001
 script = ExtResource( 1 )
 _sections_unfolded = [ "Collision" ]
-is_controlled = true
 sensitivity = Vector2( 0.003, 0.0025 )
 move_speed = 7.5
 jump_speed = 7.5

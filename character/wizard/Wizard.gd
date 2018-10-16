@@ -35,7 +35,7 @@ onready var _ball_scene = load("res://character/wizard/MagicBall.tscn")
 
 # regular update function
 func _process(delta):
-	if not is_network_master(): return
+	if not is_controlled(): return
 	
 	if _magic_ball_timer > 0:
 		_magic_ball_timer -= delta
@@ -122,3 +122,7 @@ func _impact_enemies():
 	
 	# if atleast one have been impacted, we can bounce from it
 	return impacted_one
+	
+
+func is_class(type): return type == "Wizard" or .is_type(type)
+func get_class():    return "Wizard"

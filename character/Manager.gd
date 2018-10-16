@@ -21,16 +21,7 @@ func _input(event):
 func _process(delta):
 	pass
 
-func add_character(character):
-	_characters[character] = true
-	if character.is_controlled:
-		_current_character = character
 
-func remove_character(character):
-	_characters.erase(character)
-	if character.is_controlled:
-		_current_character = null
-		_camera_node.make_current()
 
 # return the list of characters of specified team in the given radius
 func get_characters(team, position, radius):
@@ -41,15 +32,7 @@ func get_characters(team, position, radius):
 	return out
 
 
-## STATIC FUNCTIONS ##
 
-# capture and release mouse
-static func capture_mouse():
-	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-
-static func release_mouse():
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 #func _ready():
 #	var new_player = preload('res://player/Player.tscn').instance()

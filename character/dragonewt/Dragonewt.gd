@@ -35,7 +35,7 @@ func _ready():
 
 # regular update function
 func _process(delta):
-	if not is_network_master(): return
+	if not is_controlled(): return
 	
 	if _fire_timer > 0:
 		_fire_timer -= delta
@@ -121,3 +121,7 @@ func _cannon_ball(power_ratio):
 	# create instance
 	var ball = _ball_scene.instance()
 	ball.initialize(self, power_ratio)
+
+
+func is_class(type): return type == "Dragonewt" or .is_type(type)
+func get_class():    return "Dragonewt"

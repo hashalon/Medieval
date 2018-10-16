@@ -22,7 +22,8 @@ func initialize(player):
 	# ignore collision with player who emitted the projectile
 	add_exception(_player)
 	# add the projectile to the scene
-	_player.root_node.add_child(self)
+	# TODO: notify other peers
+	get_tree().get_root().get_node('Entities').add_child(self)
 	# set position and orientation of the projectile
 	global_transform.origin = _player.get_emitter()
 	global_transform.basis  = _player.get_head_basis()
