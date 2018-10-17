@@ -120,7 +120,7 @@ func _process(delta):
 
 # process the inputs to get the direction of movement
 func _get_inputs(delta):
-	if not is_network_master(): return Vector3()
+	if not is_controlled(): return Vector3()
 	
 	# we may want to jump, process jump reaction time
 	if Input.is_action_just_pressed('jump'): _jump_timer = REACTION_TIME
@@ -225,7 +225,8 @@ func set_head_body_move(v):
 
 # return true if this character is controlled by this client
 func is_controlled():
-	return _peer_id == get_network_master() #and not get_node('GameMenu').is_game_menu_visible()
+	return _peer_id == get_tree().get_network_unique_id()
+	#return _peer_id == get_network_master() #and not get_node('GameMenu').is_game_menu_visible()
 
 func set_peer_id(peer_id):
 	_peer_id = peer_id

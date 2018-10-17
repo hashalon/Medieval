@@ -162,8 +162,8 @@ sync func spawn_character(peer_id, character_name, spawn_position):
 	character.set_name(str(peer_id))
 	# set the peer id of this character
 	character.set_peer_id(peer_id)
-	if peer_id == get_tree().get_network_unique_id():
-		character.set_network_master(peer_id)
+	#if peer_id == get_tree().get_network_unique_id():
+	character.set_network_master(peer_id)
 	character.translation = spawn_position
 	# add the character
 	get_node('/root/Entities').add_child(character)

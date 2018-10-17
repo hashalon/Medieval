@@ -35,42 +35,41 @@ onready var _ball_scene = load("res://character/wizard/MagicBall.tscn")
 
 # regular update function
 func _process(delta):
-	if not is_controlled(): return
+	if is_controlled():
+		if _magic_ball_timer > 0:
+			_magic_ball_timer -= delta
+		
+		current_speed = move_speed
+		
+		# if we are downthrusting
+		if _is_downthrusting:
+			_velocity.y -= downthrust_speed * delta
+			if is_grounded():
+				_is_downthrusting = false
+				if _impact_enemies(): _velocity.y = -_velocity.y
+				else:                 _velocity   = Vector3()
 	
-	if _magic_ball_timer > 0:
-		_magic_ball_timer -= delta
+		elif Input.is_action_just_pressed('jump') and not is_grounded():
+			_is_downthrusting = true
+			_velocity.y = -downthrust_speed
 	
-	current_speed = move_speed
+		# fire lightning bolts like
+		elif Input.is_action_just_pressed('attack'):
+			_bolt_charge_timer = bolt_charge_time
+		
+		# firing lightning bolts
+		elif Input.is_action_pressed('attack'):
+			current_speed = bolt_move_speed
+			if _bolt_charge_timer > 0:
+				_bolt_charge_timer -= delta
+			else:
+				_lightning_bolt(delta)
 	
-	# if we are downthrusting
-	if _is_downthrusting:
-		_velocity.y -= downthrust_speed * delta
-		if is_grounded():
-			_is_downthrusting = false
-			if _impact_enemies(): _velocity.y = -_velocity.y
-			else:                 _velocity   = Vector3()
-
-	elif Input.is_action_just_pressed('jump') and not is_grounded():
-		_is_downthrusting = true
-		_velocity.y = -downthrust_speed
-
-	# fire lightning bolts like
-	elif Input.is_action_just_pressed('attack'):
-		_bolt_charge_timer = bolt_charge_time
-	
-	# firing lightning bolts
-	elif Input.is_action_pressed('attack'):
-		current_speed = bolt_move_speed
-		if _bolt_charge_timer > 0:
-			_bolt_charge_timer -= delta
-		else:
-			_lightning_bolt(delta)
-
-	# throw a magic-ball that bound against walls (MisterMV)
-	elif Input.is_action_just_pressed('secondary'):
-		if _magic_ball_timer <= 0:
-			_magic_ball_timer = magic_ball_time
-			_magic_ball()
+		# throw a magic-ball that bound against walls (MisterMV)
+		elif Input.is_action_just_pressed('secondary'):
+			if _magic_ball_timer <= 0:
+				_magic_ball_timer = magic_ball_time
+				_magic_ball()
 
 	._process(delta)
 

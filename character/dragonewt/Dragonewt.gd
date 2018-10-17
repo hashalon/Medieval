@@ -35,44 +35,43 @@ func _ready():
 
 # regular update function
 func _process(delta):
-	if not is_controlled(): return
-	
-	if _fire_timer > 0:
-		_fire_timer -= delta
-	
-	# prepare cannon ball
-	if Input.is_action_just_pressed('secondary'):
-		_is_charging = true
-	
-	# release cannon ball
-	elif Input.is_action_just_released('secondary'):
+	if is_controlled():
+		if _fire_timer > 0:
+			_fire_timer -= delta
 		
-		# fire a large cannon-ball that explode on impact
-		if _charge_timer > min_charge_time:
-			if _charge_timer > max_charge_time:
-				_cannon_ball(1)
-			else:
-				# charge ratio => power amount
-				var ratio = (_charge_timer - min_charge_time) / (max_charge_time - min_charge_time)
-				var power = min_charge_ratio + ratio * (1 - min_charge_ratio)
-				_cannon_ball(power)
+		# prepare cannon ball
+		if Input.is_action_just_pressed('secondary'):
+			_is_charging = true
 		
-		_is_charging  = false
-		_charge_timer = 0
-	
-	# charging the fire ball, block primary fire
-	elif _is_charging:
-		_charge_timer += delta
-	
-	# fire small sparks (shotgun like)
-	elif Input.is_action_just_pressed('attack'):
-		_fire_sparks()
-	
-	
-	# allow the wizard to hover
-	if not is_grounded():
-		if Input.is_action_pressed('jump') and _velocity.y < 0:
-			_velocity.y = -hover_fall_speed
+		# release cannon ball
+		elif Input.is_action_just_released('secondary'):
+			
+			# fire a large cannon-ball that explode on impact
+			if _charge_timer > min_charge_time:
+				if _charge_timer > max_charge_time:
+					_cannon_ball(1)
+				else:
+					# charge ratio => power amount
+					var ratio = (_charge_timer - min_charge_time) / (max_charge_time - min_charge_time)
+					var power = min_charge_ratio + ratio * (1 - min_charge_ratio)
+					_cannon_ball(power)
+			
+			_is_charging  = false
+			_charge_timer = 0
+		
+		# charging the fire ball, block primary fire
+		elif _is_charging:
+			_charge_timer += delta
+		
+		# fire small sparks (shotgun like)
+		elif Input.is_action_just_pressed('attack'):
+			_fire_sparks()
+		
+		
+		# allow the wizard to hover
+		if not is_grounded():
+			if Input.is_action_pressed('jump') and _velocity.y < 0:
+				_velocity.y = -hover_fall_speed
 	
 	._process(delta)
 

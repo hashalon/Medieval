@@ -36,43 +36,42 @@ const SHIELD_ANGLE = 50   # angle of protection provided by the shield
 
 # regular update function
 func _process(delta):
-	if not is_controlled(): return
-
-	# reset state
-	_shield_raised = false
-	current_speed  = move_speed
-	
-	if _swing_timer > 0:
-		# when the sword reach the middle, apply the hit
-		if _swing_timer <= sword_speed / 2 and not _swing_hit:
-			_swipe_sword(_swing_left)
-			_swing_left = not _swing_left
-			_swing_hit  = true
-		_swing_timer -= delta
-	elif not Input.is_action_pressed('attack'):
-		_swing_left = true
-
-	# if we are charging
-	if _charge_timer > 0:
-		_charge_timer -= delta
+	if is_controlled():
+		# reset state
+		_shield_raised = false
+		current_speed  = move_speed
 		
-		# when the timer end, stop the charge
-		if _charge_timer <= 0: _charge_end()
+		if _swing_timer > 0:
+			# when the sword reach the middle, apply the hit
+			if _swing_timer <= sword_speed / 2 and not _swing_hit:
+				_swipe_sword(_swing_left)
+				_swing_left = not _swing_left
+				_swing_hit  = true
+			_swing_timer -= delta
+		elif not Input.is_action_pressed('attack'):
+			_swing_left = true
 	
-	elif Input.is_action_pressed('secondary'):
-		_shield_raised = true
-		current_speed = shield_speed
-
-		# charge with the shield
-		if Input.is_action_just_pressed('attack'):
-			_charge_begin()
-
-	# swing the sword
-	elif Input.is_action_pressed('attack'):
-		# alternate the direction of swing
-		if _swing_timer <= 0:
-			_swing_timer = sword_speed
-			_swing_hit   = false
+		# if we are charging
+		if _charge_timer > 0:
+			_charge_timer -= delta
+			
+			# when the timer end, stop the charge
+			if _charge_timer <= 0: _charge_end()
+		
+		elif Input.is_action_pressed('secondary'):
+			_shield_raised = true
+			current_speed = shield_speed
+	
+			# charge with the shield
+			if Input.is_action_just_pressed('attack'):
+				_charge_begin()
+	
+		# swing the sword
+		elif Input.is_action_pressed('attack'):
+			# alternate the direction of swing
+			if _swing_timer <= 0:
+				_swing_timer = sword_speed
+				_swing_hit   = false
 		
 	._process(delta)
 
