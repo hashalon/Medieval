@@ -1,5 +1,12 @@
 extends "res://character/Character.gd"
 
+## CONSTANTS ##
+const ALMOST_ONE   = 0.99
+const SHIELD_ANGLE = 50   # angle of protection provided by the shield
+
+
+## ATTRIBUTES ##
+
 # shield attributes
 export var shield_speed = 3.0
 
@@ -14,25 +21,49 @@ export var sword_damage = 50
 export var sword_force  = 10.0
 export var sword_speed  = 0.25
 
-export var downthrust_speed = 10
 
-# private members
+## PRIVATES ##
 var _swing_left    = false
 var _swing_timer   = 0
 var _swing_hit     = false
 var _shield_raised = false
 var _charge_timer  = 0
 
-# nodes...
-onready var _sword_zone  = $Camera/Sword
+
+## NODES ##
+onready var _sword_zone   = $Head/Sword
+onready var _shield_zone  = $Shield
+onready var _shield_shape = $Shield/Shape
 
 
-const ALMOST_ONE   = 0.99
-const SHIELD_ANGLE = 50   # angle of protection provided by the shield
+## TO OVERRIDE ##
+
+# override class check to allow attacks
+func is_class(type): return type == "Knight" or .is_class(type)
+func get_class():    return         "Knight"
+
+# set team of character
+func set_team(team):
+	.set_team(team)
+	match team:
+		TEAM.alpha:
+			_sword_zone .set_collision_mask_bit(2, false)
+			_shield_zone.set_collision_mask_bit(2, false)
+		TEAM.beta:
+			_sword_zone .set_collision_mask_bit(3, false)
+			_shield_zone.set_collision_mask_bit(3, false)
+		TEAM.gamma:
+			_sword_zone .set_collision_mask_bit(4, false)
+			_shield_zone.set_collision_mask_bit(4, false)
+
+
+## NETWORKING ##
+
+
+## ENGINE'S METHODS ##
 
 #func _ready():
 #	._ready()
-
 
 # regular update function
 func _process(delta):
@@ -48,12 +79,12 @@ func _process(delta):
 				_swing_left = not _swing_left
 				_swing_hit  = true
 			_swing_timer -= delta
-		elif not Input.is_action_pressed('attack'):
-			_swing_left = true
+		elif not Input.is_action_pressed('attack'): _swing_left = true
 	
 		# if we are charging
 		if _charge_timer > 0:
 			_charge_timer -= delta
+			_shield_raised = true
 			
 			# when the timer end, stop the charge
 			if _charge_timer <= 0: _charge_end()
@@ -63,8 +94,7 @@ func _process(delta):
 			current_speed = shield_speed
 	
 			# charge with the shield
-			if Input.is_action_just_pressed('attack'):
-				_charge_begin()
+			if Input.is_action_just_pressed('attack'): _charge_begin()
 	
 		# swing the sword
 		elif Input.is_action_pressed('attack'):
@@ -73,6 +103,9 @@ func _process(delta):
 				_swing_timer = sword_speed
 				_swing_hit   = false
 		
+		# the shield zone needs to be active when the shield is raised
+		_shield_shape.set_disabled(not _shield_raised)
+		
 	._process(delta)
 
 # we need to use a synchronized process for the charge
@@ -80,23 +113,16 @@ func _physics_process(delta):
 	if not is_controlled(): return
 	
 	# detect enemies on the path and collide with them
-	if _charge_timer > 0:
-		_push_enemies()
+	if _charge_timer > 0: _push_enemies()
 
-# set team of character
-func set_team(team):
-	.set_team(team)
-	match team:
-		TEAM.alpha: _sword_zone.set_collision_mask_bit(2, false)
-		TEAM.beta:  _sword_zone.set_collision_mask_bit(3, false)
-		TEAM.gamma: _sword_zone.set_collision_mask_bit(4, false)
+
+## PRIVATE METHODS ##
 
 # setup the character to start a charge
 func _charge_begin():
 	# disable controls
-	set_head_body_move(false)
+	set_can_move(false)
 	# activate charge
-	#_charge_ray.set_enabled(true)
 	_charge_timer = charge_time
 	# manage velocity
 	_push_force   = Vector3()
@@ -112,9 +138,8 @@ func _charge_begin():
 # re-setup the character to move normally again
 func _charge_end():
 	# reactivate controls
-	set_head_body_move(true)
+	set_can_move(true)
 	# disable charge
-	#_charge_ray.set_enabled(false)
 	_charge_timer = 0
 	# reset velocity
 	_velocity     = Vector3()
@@ -123,23 +148,25 @@ func _charge_end():
 
 # when charging, push any enemies on the way
 func _push_enemies():
-	# see each collided object
-	for i in range(get_slide_count()):
-		var collision = get_slide_collision(i)
-		var obj = collision.collider
-		
-		# if the object is a character -> impact him
-		if is_enemy(obj): 
-			var dir = _velocity.normalized()
-			if dir.y < EPSILON_IMPULSE: dir.y = EPSILON_IMPULSE
-			obj.apply_damage(charge_damage, dir * charge_force)
+	# prepare the force
+	var dir = _velocity.normalized()
+	if dir.y < EPSILON_IMPULSE: dir.y = EPSILON_IMPULSE
+	var force = dir * charge_force
+	
+	# find all bodies on the way
+	var bodies = _shield_zone.get_overlapping_bodies()
+	for body in bodies:
+		if is_enemy(body):
+			# damage the character
+			body.apply_damage(charge_damage, force)
 
 
 # swipe the sword and push-damage the enemies
 func _swipe_sword(swipe_left):
+	# prepare the force
 	var dir = Vector3(1, EPSILON_IMPULSE, -EPSILON_IMPULSE)
 	if swipe_left: dir.x = -1
-	var force = _camera_node.global_transform.basis.xform(dir) * sword_force
+	var force = _head.global_transform.basis.xform(dir) * sword_force
 	
 	# apply damage and push force to all bodies in the zone
 	var bodies = _sword_zone.get_overlapping_bodies()
@@ -148,27 +175,6 @@ func _swipe_sword(swipe_left):
 			# damage the character
 			body.apply_damage(sword_damage, force)
 
-## public methods ##
-func apply_damage(damage, force):
-	# no shield => nothing to do in particular
-	if not _shield_raised:
-		.apply_damage(damage, force)
-		return
-	
-	# if the force is purely vertical, don't apply damages
-	if force.x == 0 and force.z == 0:
-		return
-	
-	# check direction of force
-	var dir1 = global_transform.basis.xform(Vector3(0, 0, -1))
-	var dir2 = -force
-	# flatten the directions
-	dir1.y = 0
-	dir2.y = 0
-	# check the angle between the two directions
-	if dir1.angle_to(dir2) > SHIELD_ANGLE:
-		.apply_damage(damage, force)
 
 
-func is_class(type): return type == "Knight" or .is_type(type)
-func get_class():    return "Knight"
+

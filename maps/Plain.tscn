@@ -1,8 +1,6 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://environment/Map.gd" type="Script" id=1]
-[ext_resource path="res://menu/SpawnSelect.tscn" type="PackedScene" id=2]
-[ext_resource path="res://menu/GameMenu.tscn" type="PackedScene" id=3]
 
 [sub_resource type="BoxShape" id=1]
 
@@ -16,7 +14,7 @@ subdivide_width = 0
 subdivide_height = 0
 subdivide_depth = 0
 
-[node name="Map" type="Node" index="0"]
+[node name="Map" type="Node"]
 
 script = ExtResource( 1 )
 
@@ -117,9 +115,5 @@ size = 1.0
 near = 0.05
 far = 100.0
 _sections_unfolded = [ "Transform" ]
-
-[node name="SpawnSelect" parent="." index="2" instance=ExtResource( 2 )]
-
-[node name="GameMenu" parent="." index="3" instance=ExtResource( 3 )]
 
 

@@ -11,6 +11,10 @@ create a texture for defining color shading:
 https://hackernoon.com/pico-8-lighting-part-1-thin-dark-line-8ea15d21fed7
 
 
+select a color palette on this website:
+https://lospec.com/palette-list
+
+
 ## Classes
 
 Name      | Specie    | Primary        | Secondary      | Both            | Air          |

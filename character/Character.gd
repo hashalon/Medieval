@@ -9,7 +9,6 @@ extends KinematicBody
 
 enum  TEAM { neutral, alpha, beta, gamma }
 
-
 ## CONSTANTS ##
 const REACTION_TIME   = 0.2
 const MAX_SLIDES      = 4
@@ -32,8 +31,8 @@ export var move_speed  = 7.5
 export var jump_speed  = 7.5
 export var gravity     = 10.0
 
-export(TEAM) var team = TEAM.neutral
-export var health = 100
+export(TEAM) var team   = TEAM.neutral
+export       var health = 100
 
 
 ## MODIFIERS ##
@@ -51,14 +50,97 @@ var _jump_timer = 0                # reaction timer for jumping
 
 
 ## NODES ##
-onready var _camera_node = $Camera
-onready var _feet_node   = $Feet
-onready var _model_node  = $Model
+onready var _ent_man = get_node('/root/EntityManager')
+onready var _head    = $Head
+onready var _feet    = $Feet
+onready var _model   = $Model
 
 
 ## SLAVES ##
 slave var _slave_position = Vector3()
 slave var _slave_velocity = Vector3()
+
+
+## TO OVERRIDE ##
+
+# override class check to allow attacks
+func is_class(type): return type == "Character" or .is_class(type)
+func get_class():    return         "Character"
+
+# return the emitter of the character (for projectiles)
+func get_emitter():  return _head.global_transform.origin
+
+# set the team of the character and edit its collision masks
+func set_team(team):
+	self.team = team
+	if team != TEAM.neutral:
+		set_collision_layer_bit(1, false)
+		match team:
+			TEAM.alpha: set_collision_layer_bit(2, true)
+			TEAM.beta:  set_collision_layer_bit(3, true)
+			TEAM.gamma: set_collision_layer_bit(4, true)
+
+
+## ACCESSORS ##
+
+# return true if this character is controlled by this client
+func is_controlled(): return is_network_master() # _peer_id == get_tree().get_network_unique_id()
+# return true if the character is really grounded
+func is_grounded():   return is_on_floor() or _feet.is_colliding()
+
+# two characters are enemies if one is neutral or their teams are different
+func is_enemy(other):
+	# no cast in godot
+	if not other.is_class('Character') or other == self: return false
+	return team == TEAM.neutral or other.team == TEAM.neutral or team != other.team
+
+# return the direction the head is looking at
+func get_forward_look():  return _head.global_transform.basis.xform(Vector3(0, 0, -1)).normalized()
+# return position and rotation of the head
+func get_head_position(): return _head.global_transform.origin # Vector3
+func get_head_rotation(): return _head.global_transform.basis  # Basis
+
+# return the position of the body and the orientation of the head
+func get_position():    return translation                           # Vector3
+func get_orientation(): return Vector2(rotation.y, _head.rotation.x) # Vector2
+
+# allow to set both head and body control in one call
+func set_can_move(can_move):
+	can_move_head = can_move
+	can_move_body = can_move
+
+
+## NETWORKING ##
+
+# setup the character based on the data received from the network
+sync func init(peer_id, team, health, position, orientation):
+	_peer_id = peer_id
+	set_network_master(peer_id)
+	set_team(team)
+	# set health or use default one
+	if health > 0: self.health = health
+	set_pose(position, Vector3(), orientation)
+
+
+# synchronize character motion to other peers
+slave func set_pose(position, velocity, orientation):
+	translation      = position
+	_velocity        = velocity
+	rotation.y       = orientation.x
+	_head.rotation.x = orientation.y
+
+
+# add force and damages to the character
+sync func apply_damage(damage, force):
+	_push_force += force
+	health      -= damage
+	if health < 0: health = 0
+
+
+# kill the character TODO...
+sync func die():
+	# play a death animation
+	set_network_master(1)
 
 
 ## ENGINE'S METHODS ##
@@ -67,8 +149,7 @@ slave var _slave_velocity = Vector3()
 func _ready():
 	if is_controlled():
 		capture_mouse()
-		#_model_node.set_visible(false)
-		_camera_node.make_current()
+		_head.make_current()
 	
 	if team != TEAM.neutral:
 		set_team(team)
@@ -79,9 +160,9 @@ func _input(event):
 	if not is_controlled(): return
 	
 	# handle head movements
-	if event is InputEventMouseMotion and can_move_head:
+	if can_move_head and event is InputEventMouseMotion:
 		rotation.y -= event.relative.x * sensitivity.x
-		_camera_node.rotation.x = clamp(_camera_node.rotation.x 
+		_head.rotation.x = clamp(_head.rotation.x 
 			- event.relative.y * sensitivity.y, -MAX_ANGLE, MAX_ANGLE)
 
 
@@ -91,11 +172,9 @@ func _process(delta):
 	if is_controlled():
 		
 		# check for ground normal
-		#_normal = _feet_node.get_collision_normal() if _feet_node.is_colliding() else Vector3(0, 1, 0)
-		if _feet_node.is_colliding():
-			_normal = _feet_node.get_collision_normal()
-		else:
-			_normal = Vector3(0, 1, 0)
+		#_normal = _feet.get_collision_normal() if _feet.is_colliding() else Vector3(0, 1, 0)
+		if _feet.is_colliding(): _normal = _feet.get_collision_normal()
+		else:                    _normal = Vector3(0, 1, 0)
 			
 		# handle movement of the body based on inputs
 		if can_move_body:
@@ -107,7 +186,7 @@ func _process(delta):
 		_push_force = Vector3()
 		
 		# send pose to others
-		rpc_unreliable('set_pose', translation, _velocity, rotation.y, _camera_node.rotation.x)
+		rpc_unreliable('set_pose', translation, _velocity, get_orientation())
 	
 	# apply for all (local and remotes)
 	move_and_slide(_velocity, _normal, current_speed / 2, MAX_SLIDES, STEEP_SLOPE)
@@ -124,7 +203,7 @@ func _get_inputs(delta):
 	
 	# we may want to jump, process jump reaction time
 	if Input.is_action_just_pressed('jump'): _jump_timer = REACTION_TIME
-	if _jump_timer > 0: _jump_timer -= delta
+	if _jump_timer > 0:                      _jump_timer -= delta
 	
 	# detect user movement
 	var dir = Vector2()
@@ -132,7 +211,7 @@ func _get_inputs(delta):
 	if Input.is_action_pressed('right'): dir.x += 1
 	if Input.is_action_pressed('up'   ): dir.y += 1
 	if Input.is_action_pressed('down' ): dir.y -= 1
-	if dir.length_squared() > 1: dir = dir.normalized()
+	if dir.length_squared() > 1:         dir = dir.normalized()
 	
 	# turn input into movement
 	return global_transform.basis.xform(Vector3(dir.x, 0, -dir.y))
@@ -158,7 +237,7 @@ func _process_vertical_velocity(movement, delta):
 		
 		# compute the gravity to apply based on the situation
 		var grav = gravity * delta
-		var high = is_network_master() and Input.is_action_pressed('jump')
+		var high = is_controlled() and Input.is_action_pressed('jump')
 		
 		if _velocity.y < 0: vel_y -= grav * FALL_MULTIPLIER # falling
 		elif high:          vel_y -= grav                   # high jump
@@ -170,90 +249,7 @@ func _process_vertical_velocity(movement, delta):
 	
 	# apply the velocity
 	_velocity = vel
-	if not is_on_floor() or vel_y > 0:
-		_velocity.y += vel_y
-
-
-## SLAVE METHODS ##
-
-# synchronize character motion to other peers
-slave func set_pose(pos, vel, rot_h, rot_v):
-	translation = pos
-	_velocity   = vel
-	rotation.y  = rot_h
-	_camera_node.rotation.x = rot_v
-
-
-## PUBLIC METHODS ##
-
-# add force or damage the character
-func add_force(force):
-	_push_force += force
-
-func add_damage(damage): 
-	health -= damage
-	if health < 0: health = 0
-
-# add force and damages to the character
-func apply_damage(damage, force):
-	_push_force += force
-	health      -= damage
-	if health < 0: health = 0
-
-
-# set the team of the character
-func set_team(team):
-	self.team = team
-	if team != TEAM.neutral:
-		set_collision_layer_bit(1, false)
-		match team:
-			TEAM.alpha: set_collision_layer_bit(2, true)
-			TEAM.beta:  set_collision_layer_bit(3, true)
-			TEAM.gamma: set_collision_layer_bit(4, true)
-
-
-# kill the character
-func die():
-	# play a death animation
-	set_network_master(1)
-
-
-# allow to set both head and body control in one call
-func set_head_body_move(v):
-	can_move_head = v
-	can_move_body = v
-
-# return true if this character is controlled by this client
-func is_controlled():
-	return _peer_id == get_tree().get_network_unique_id()
-	#return _peer_id == get_network_master() #and not get_node('GameMenu').is_game_menu_visible()
-
-func set_peer_id(peer_id):
-	_peer_id = peer_id
-
-# override class check to allow attacks
-func is_class(type): return type == "Character" or .is_type(type)
-func get_class():    return "Character"
-
-# return true if the character is really grounded
-func is_grounded(): return is_on_floor() or _feet_node.is_colliding()
-
-# two characters are enemies if one is neutral or their teams are different
-func is_enemy(other):
-	# no cast in godot
-	if not other.is_class('Character') or other == self: return false
-	return team == TEAM.neutral or other.team == TEAM.neutral or team != other.team
-
-# return the direction the head is looking at
-func get_forward_look():
-	return _camera_node.global_transform.basis.xform(Vector3(0, 0, -1)).normalized()
-
-# return position and rotation of the head
-func get_head_position(): return _camera_node.global_transform.origin
-func get_head_basis():    return _camera_node.global_transform.basis
-
-# return the emitter of the character (for projectiles)
-func get_emitter(): return _camera_node.global_transform.origin
+	if not is_on_floor() or vel_y > 0: _velocity.y += vel_y
 
 
 ## STATIC FUNCTIONS ##
@@ -269,6 +265,7 @@ static func capture_mouse():
 
 static func release_mouse():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
 
 # slave variables
 #slave var slave_position = Vector3()

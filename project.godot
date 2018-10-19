@@ -16,8 +16,8 @@ config/icon="res://icon.png"
 
 [autoload]
 
-Lobby="*res://networking/Lobby.gd"
-Entities="*res://environment/Entities.gd"
+NetworkManager="*res://networking/NetworkManager.gd"
+EntityManager="*res://networking/EntityManager.gd"
 
 [input]
 

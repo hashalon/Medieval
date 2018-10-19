@@ -90,7 +90,7 @@ gravity = 10.0
 team = 0
 health = 100
 
-[node name="Camera" type="Camera" parent="." index="0"]
+[node name="Head" type="Camera" parent="." index="0"]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
 keep_aspect = 1

@@ -1,14 +1,18 @@
 extends "res://character/Projectile.gd"
 
+## ATTRIBUTES ##
 export var impact_damage = 30
 export var impact_force  = 15.0
+
+
+## ENGINE ##
 
 # maybe use _physics_process to detect collisions
 func _physics_process(delta):
 	# detect collisions
 	if is_colliding():
 		var obj = get_collider()
-		if _player.is_enemy(obj):
+		if _character.is_enemy(obj):
 			# damage
 			
 			# push back the enemy

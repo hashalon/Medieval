@@ -77,7 +77,7 @@ _sections_unfolded = [ "Albedo", "Flags", "Metallic" ]
 
 radius = 1.5
 
-[node name="Wizard" type="KinematicBody" index="0"]
+[node name="Wizard" type="KinematicBody"]
 
 input_ray_pickable = true
 input_capture_on_drag = false
@@ -106,7 +106,7 @@ downthrust_speed = 2.0
 downthrust_damage = 20
 downthrust_force = 15.0
 
-[node name="Camera" type="Camera" parent="." index="0"]
+[node name="Head" type="Camera" parent="." index="0"]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
 keep_aspect = 1
@@ -123,7 +123,7 @@ near = 0.05
 far = 100.0
 _sections_unfolded = [ "Transform" ]
 
-[node name="Bolt" type="Area" parent="Camera" index="0"]
+[node name="Bolt" type="Area" parent="Head" index="0"]
 
 input_ray_pickable = true
 input_capture_on_drag = false
@@ -147,7 +147,7 @@ reverb_bus_amount = 0.0
 reverb_bus_uniformity = 0.0
 _sections_unfolded = [ "Collision" ]
 
-[node name="range" type="CollisionShape" parent="Camera/Bolt" index="0"]
+[node name="range" type="CollisionShape" parent="Head/Bolt" index="0"]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3 )
 shape = SubResource( 1 )

@@ -1,7 +1,7 @@
 extends Control
 
 # need access to lobby to change player parameters
-onready var _lobby = get_tree().get_root().get_node('Lobby')
+onready var _net_man = get_node('/root/NetworkManager')
 
 # panel with multiple tabs:
 # user profile
@@ -10,11 +10,11 @@ onready var _lobby = get_tree().get_root().get_node('Lobby')
 
 func _ready():
 	var field = $Container/Profile/Panel/NameField
-	field.set_text(_lobby.my_player.name)
+	field.set_text(_net_man.my_player.name)
 	field.connect('text_entered', self, 'on_name_changed')
 
 
 func on_name_changed(new_name):
 	if new_name == "": new_name = 'unnamed'
-	_lobby.my_player.name = new_name
+	_net_man.my_player.name = new_name
 	print('name changed to: ' + new_name)

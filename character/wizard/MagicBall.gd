@@ -1,8 +1,25 @@
 extends "res://character/Projectile.gd"
 
+## ATTRIBUTES ##
 export var contact_damage = 10
 
+## NODES ##
 onready var _damage_zone = $Damage
+
+
+## TO OVERRIDE ##
+
+func initialize(character, power_ratio):
+	.initialize(character)
+	
+	# update the collision mask of the projectile
+	match _character.team:
+		CHARACTER.TEAM.alpha: _damage_zone.set_collision_mask_bit(2, false)
+		CHARACTER.TEAM.beta:  _damage_zone.set_collision_mask_bit(3, false)
+		CHARACTER.TEAM.gamma: _damage_zone.set_collision_mask_bit(4, false)
+
+
+## ENGINE ##
 
 func _ready():
 	add_exception(_damage_zone)
@@ -16,7 +33,7 @@ func _process(delta):
 	# get all bodies on the path of the magic ball
 	var bodies = _damage_zone.get_overlapping_bodies()
 	for body in bodies:
-		if _player.is_enemy(body):
+		if _character.is_enemy(body):
 			body.add_damage(contact_damage) # damage enemy
 	
 	._process(delta)
@@ -29,14 +46,8 @@ func _physics_process(delta):
 			# bounce of walls only
 			bounce(get_collision_normal())
 
-func initialize(player, power_ratio):
-	.initialize(player)
-	
-	# update the collision mask of the projectile
-	match _player.team:
-		CHARACTER.TEAM.alpha: _damage_zone.set_collision_mask_bit(2, false)
-		CHARACTER.TEAM.beta:  _damage_zone.set_collision_mask_bit(3, false)
-		CHARACTER.TEAM.gamma: _damage_zone.set_collision_mask_bit(4, false)
+
+## PRIVATES ##
 
 # make the ball bounce of the plane defined by the given normal
 func bounce(normal):

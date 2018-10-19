@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://character/knight/Knight.gd" type="Script" id=1]
 
@@ -73,7 +73,11 @@ proximity_fade_enable = false
 distance_fade_enable = false
 _sections_unfolded = [ "Albedo", "Flags", "Metallic" ]
 
-[node name="Knight" type="KinematicBody"]
+[sub_resource type="BoxShape" id=5]
+
+extents = Vector3( 0.6, 1, 0.5 )
+
+[node name="Knight" type="KinematicBody" index="0"]
 
 input_ray_pickable = true
 input_capture_on_drag = false
@@ -102,9 +106,8 @@ charge_force = 10.0
 sword_damage = 50
 sword_force = 10.0
 sword_speed = 0.25
-downthrust_speed = 10
 
-[node name="Camera" type="Camera" parent="." index="0"]
+[node name="Head" type="Camera" parent="." index="0"]
 
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
 keep_aspect = 1
@@ -121,7 +124,7 @@ near = 0.05
 far = 100.0
 _sections_unfolded = [ "Transform" ]
 
-[node name="Sword" type="Area" parent="Camera" index="0"]
+[node name="Sword" type="Area" parent="Head" index="0"]
 
 input_ray_pickable = false
 input_capture_on_drag = false
@@ -145,7 +148,7 @@ reverb_bus_amount = 0.0
 reverb_bus_uniformity = 0.0
 _sections_unfolded = [ "Collision" ]
 
-[node name="range" type="CollisionShape" parent="Camera/Sword" index="0"]
+[node name="range" type="CollisionShape" parent="Head/Sword" index="0"]
 
 transform = Transform( -1.62921e-07, 0, 1, 0, 1, 0, -1, 0, -1.62921e-07, 0, 0, -1 )
 shape = SubResource( 1 )
@@ -183,5 +186,36 @@ mesh = SubResource( 3 )
 skeleton = NodePath("..")
 material/0 = SubResource( 4 )
 _sections_unfolded = [ "Transform", "material" ]
+
+[node name="Shield" type="Area" parent="." index="4"]
+
+input_ray_pickable = false
+input_capture_on_drag = false
+space_override = 0
+gravity_point = false
+gravity_distance_scale = 0.0
+gravity_vec = Vector3( 0, -1, 0 )
+gravity = 9.8
+linear_damp = 0.1
+angular_damp = 1.0
+priority = 0.0
+monitoring = true
+monitorable = true
+collision_layer = 1
+collision_mask = 30
+audio_bus_override = false
+audio_bus_name = "Master"
+reverb_bus_enable = false
+reverb_bus_name = "Master"
+reverb_bus_amount = 0.0
+reverb_bus_uniformity = 0.0
+_sections_unfolded = [ "Collision" ]
+
+[node name="Shape" type="CollisionShape" parent="Shield" index="0"]
+
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5 )
+shape = SubResource( 5 )
+disabled = true
+_sections_unfolded = [ "Transform" ]
 
 

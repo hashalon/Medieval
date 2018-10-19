@@ -1,7 +1,9 @@
 extends Control
 
-# need access to lobby for hosting
-onready var _lobby = get_tree().get_root().get_node('Lobby')
+const MAP_PATH = 'res://maps/'
+
+# need access to network manager for hosting
+onready var _net_man = get_node('/root/NetworkManager')
 
 # provide a list of map to select and run a game
 onready var _maps = $Menu/Maps
@@ -10,7 +12,7 @@ func _ready():
 	$Menu/Buttons/BtnHost.connect('pressed', self, 'host_game')
 	
 	# add the maps to the list
-	var map_files = list_files_in_directory('res://maps')
+	var map_files = list_files_in_directory(MAP_PATH)
 	for map in map_files:
 		_maps.add_item(map)
 
@@ -22,7 +24,7 @@ func host_game():
 	if map == null: return
 	
 	# prepare a host
-	var host = _lobby.create_host('res://maps/' + map)
+	var host = _net_man.create_host(MAP_PATH + map)
 	if host == null: return
 	
 	# host is ready

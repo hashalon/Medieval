@@ -1,8 +1,7 @@
 extends "res://character/Character.gd"
 
-# TODO: turn lighting bolt into a machinegun like weapon
 
-# attributes
+## ATTRIBUTES ##
 
 # lightning bolts
 export var bolt_charge_time = 1.0
@@ -17,17 +16,42 @@ export var downthrust_speed  = 2.0
 export var downthrust_damage = 20
 export var downthrust_force  = 15.0
 
-# private members
+## PRIVATES ##
 var _bolt_charge_timer = 0
 var _magic_ball_timer  = 0
 var _is_downthrusting  = false
 
-# nodes...
-onready var _bolt_zone   = $Camera/Bolt
+## NODES ##
+onready var _bolt_zone   = $Head/Bolt
 onready var _impact_zone = $Impact
 
-# projectile
-onready var _ball_scene = load("res://character/wizard/MagicBall.tscn")
+## SCENES ##
+onready var _ball_projectile = load("res://character/wizard/MagicBall.tscn")
+
+
+## TO OVERRIDE ##
+
+func is_class(type): return type == "Wizard" or .is_class(type)
+func get_class():    return         "Wizard"
+
+
+# set team of character
+func set_team(team):
+	.set_team(team)
+	match team:
+		TEAM.alpha:
+			_bolt_zone  .set_collision_mask_bit(2, false)
+			_impact_zone.set_collision_mask_bit(2, false)
+		TEAM.beta:
+			_bolt_zone  .set_collision_mask_bit(3, false)
+			_impact_zone.set_collision_mask_bit(3, false)
+		TEAM.gamma:
+			_bolt_zone  .set_collision_mask_bit(4, false)
+			_impact_zone.set_collision_mask_bit(4, false)
+
+
+
+## ENGINE ##
 
 #func _ready():
 #	._ready()
@@ -60,10 +84,8 @@ func _process(delta):
 		# firing lightning bolts
 		elif Input.is_action_pressed('attack'):
 			current_speed = bolt_move_speed
-			if _bolt_charge_timer > 0:
-				_bolt_charge_timer -= delta
-			else:
-				_lightning_bolt(delta)
+			if _bolt_charge_timer > 0: _bolt_charge_timer -= delta
+			else:                      _lightning_bolt(delta)
 	
 		# throw a magic-ball that bound against walls (MisterMV)
 		elif Input.is_action_just_pressed('secondary'):
@@ -74,19 +96,7 @@ func _process(delta):
 	._process(delta)
 
 
-# set team of character
-func set_team(team):
-	.set_team(team)
-	match team:
-		TEAM.alpha:
-			_bolt_zone  .set_collision_mask_bit(2, false)
-			_impact_zone.set_collision_mask_bit(2, false)
-		TEAM.beta:
-			_bolt_zone  .set_collision_mask_bit(3, false)
-			_impact_zone.set_collision_mask_bit(3, false)
-		TEAM.gamma:
-			_bolt_zone  .set_collision_mask_bit(4, false)
-			_impact_zone.set_collision_mask_bit(4, false)
+## PRIVATES ##
 
 # throw continuous lightning bolts
 func _lightning_bolt(delta):
@@ -96,13 +106,15 @@ func _lightning_bolt(delta):
 	var damage = bolt_dps * delta
 	for body in bodies:
 		if is_enemy(body):
-			body.add_damage(damage) # Damage enemies
+			body.apply_damage(damage, Vector3()) # Damage enemies
+
 
 # throw a magic ball
 func _magic_ball():
 	# generate the ball
-	var ball = _ball_scene.instance()
+	var ball = _ball_projectile.instance()
 	ball.initialize(self)
+
 
 # impact enemies when downthrusting
 func _impact_enemies():
@@ -123,5 +135,3 @@ func _impact_enemies():
 	return impacted_one
 	
 
-func is_class(type): return type == "Wizard" or .is_type(type)
-func get_class():    return "Wizard"
