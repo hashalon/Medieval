@@ -22,7 +22,7 @@ var _is_charging  = false
 
 ## NODES ##
 onready var _emitter = $Head/Emitter
-onready var _rays    = $Camera.get_children()
+onready var _rays    = $Head.get_children()
 
 ## SCENES ##
 onready var _ball_projectile = load("res://character/dragonewt/CannonBall.tscn")

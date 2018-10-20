@@ -18,7 +18,7 @@ const CHARACTERS = {
 
 # List of projectiles that can be created
 const PROJECTILES = {
-	'Arrow':      preload('res://character/rogue/Arrow.tscn'         ),
+	#'Arrow':      preload('res://character/archer/Arrow.tscn'        ),
 	'MagicBall':  preload('res://character/wizard/MagicBall.tscn'    ),
 	'CannonBall': preload('res://character/dragonewt/CannonBall.tscn')
 }

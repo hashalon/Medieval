@@ -120,6 +120,11 @@ sync func init(peer_id, team, health, position, orientation):
 	# set health or use default one
 	if health > 0: self.health = health
 	set_pose(position, Vector3(), orientation)
+	
+	# if this character is our character then prepare mouse and camera
+	if is_controlled():
+		capture_mouse()
+		_head.make_current()
 
 
 # synchronize character motion to other peers
@@ -147,10 +152,6 @@ sync func die():
 
 # when the character is created
 func _ready():
-	if is_controlled():
-		capture_mouse()
-		_head.make_current()
-	
 	if team != TEAM.neutral:
 		set_team(team)
 

@@ -14,12 +14,13 @@ var _jump_count = 0
 onready var _hook_ray = $Head/Hook
 
 ## SCENES ##
+onready var _arrow_projectile = load("res://character/rogue/Arrow.tscn")
 
 
 ## TO OVERRIDE ##
 
-func is_class(type): return type == "Rogue" or .is_class(type)
-func get_class():    return         "Rogue"
+func is_class(type): return type == "Archer" or .is_class(type)
+func get_class():    return         "Archer"
 
 
 ## NETWORKING ##
@@ -46,11 +47,9 @@ func _process(delta):
 		# fire an arrow
 		if Input.is_action_just_pressed('attack'):
 			if _fire_timer <= 0:
-				pass
-				# TODO: use hitscan with a crossbow instead
-				#var arrow = _arrow_projectile.instance()
-				#arrow.initialize(self)
-				#_fire_timer = fire_speed
+				var arrow = _arrow_projectile.instance()
+				arrow.initialize(self)
+				_fire_timer = fire_speed
 		
 		# use grappling hook
 		if Input.is_action_just_pressed('secondary'):
